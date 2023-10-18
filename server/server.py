@@ -2,8 +2,7 @@ import socket
 from importlib.machinery import SourceFileLoader
 
 
-operations_module = SourceFileLoader("operations", "../simplified_version/operations.py").load_module()
-from operations_module import *
+from operations import *
 
 # Create a socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
