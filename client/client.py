@@ -16,8 +16,9 @@ while True:
     message = client_socket.recv(1024).decode()
     print(message)
 
-    key = (input("Write here:"))
-    client_socket.send(key.encode())
+    if message.endswith(":"): 
+        key = (input())
+        client_socket.send(key.encode())
 
 
 

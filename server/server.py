@@ -30,41 +30,42 @@ while True:
     client_socket, client_address = server_socket.accept()
     print(f"Connection from {client_address}")
 
-    client_socket.send("Press 1 to see list, 2 to add element".encode())
+    while True:
+        client_socket.send("\nPress 1 to see list, 2 to add element:".encode())
 
-    # Receive the key from the client
-    key = client_socket.recv(1024).decode().strip()
-    print(f"Received key: {key}")
+        # Receive the key from the client
+        key = client_socket.recv(1024).decode().strip()
+        print(f"Received key: {key}")
 
-    
-    if (key == "1"):
+        
+        if (key == "1"):
 
-        # Get the list items
-        items = [str(item) for item in local_lists[list_id].items]
+            # Get the list items
+            items = [str(item) for item in local_lists[list_id].items]
 
-        # Send the list items back to the client
-        client_socket.send(" ".join(items).encode())
-    elif (key == "2"):
-        client_socket.send("Name of the item:".encode())
+            # Send the list items back to the client
+            client_socket.send(" ".join(items).encode())
+        elif (key == "2"):
+            client_socket.send("Name of the item:".encode())
 
-        name = client_socket.recv(1024).decode().strip()
+            name = client_socket.recv(1024).decode().strip()
 
-        client_socket.send("Quantity:".encode())
+            client_socket.send("Quantity:".encode())
 
-        quantity = client_socket.recv(1024).decode().strip()
+            quantity = client_socket.recv(1024).decode().strip()
 
-        try:
-            quantity = int(quantity)
-            add_item_to_list(list_id, name, quantity)
+            try:
+                quantity = int(quantity)
+                add_item_to_list(list_id, name, quantity)
 
-        except ValueError:
-            client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
-    elif (key == "0"):
-        break
-    
+            except ValueError:
+                client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
+        elif (key == "0"):
+            break # break inner loop
+        
 
-    else:
-        client_socket.send("Invalid key".encode())
+        else:
+            client_socket.send("Invalid key".encode())
 
-# Close the client socket
-client_socket.close()
+    # Close the client socket
+    client_socket.close()
