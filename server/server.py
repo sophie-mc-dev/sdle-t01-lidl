@@ -54,8 +54,11 @@ while True:
             items = [str(item) for item in local_lists[list_id].items]
 
             # Send the list items back to the client
-            client_socket.send(" ".join(items).encode())
+            client_socket.send("\n".join(items).encode())
+
+
         elif (key == "2"):
+
             client_socket.send("Name of the item:".encode())
 
             name = client_socket.recv(1024).decode().strip()
@@ -70,9 +73,9 @@ while True:
 
             except ValueError:
                 client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
+
         elif (key == "0"):
             break # break inner loop
-        
 
         else:
             client_socket.send("Invalid key".encode())
