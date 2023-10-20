@@ -18,28 +18,53 @@ server_socket.bind((host, port))
 server_socket.listen(5)  # 5 connections for now
 print("Server is listening...")
 
+
+# CREATE LIST
+
+list_id = create_shopping_list()
+add_item_to_list(list_id, "Milk", 2)
+add_item_to_list(list_id, "Eggs", 1)
+
 while True:
     # Accept a connection from a client
     client_socket, client_address = server_socket.accept()
     print(f"Connection from {client_address}")
 
+    client_socket.send("Press 1 to see list, 2 to add element".encode())
+
     # Receive the key from the client
-    key = client_socket.recv(1024).decode()
+    key = client_socket.recv(1024).decode().strip()
     print(f"Received key: {key}")
 
-    if (key):
-        
-        list_id = create_shopping_list()
-        add_item_to_list(list_id, "Milk", 2)
-        add_item_to_list(list_id, "Eggs", 1)
+    
+    if (key == "1"):
 
         # Get the list items
         items = [str(item) for item in local_lists[list_id].items]
 
         # Send the list items back to the client
         client_socket.send(" ".join(items).encode())
+    elif (key == "2"):
+        client_socket.send("Name of the item:".encode())
+
+        name = client_socket.recv(1024).decode().strip()
+
+        client_socket.send("Quantity:".encode())
+
+        quantity = client_socket.recv(1024).decode().strip()
+
+        try:
+            quantity = int(quantity)
+            add_item_to_list(list_id, name, quantity)
+
+        except ValueError:
+            client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
+    elif (key == "0"):
+        break
+    
+
     else:
         client_socket.send("Invalid key".encode())
 
-    # Close the client socket
-    client_socket.close()
+# Close the client socket
+client_socket.close()
