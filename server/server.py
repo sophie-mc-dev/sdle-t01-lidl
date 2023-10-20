@@ -34,7 +34,17 @@ while True:
         client_socket.send("\nPress 1 to see list, 2 to add element:".encode())
 
         # Receive the key from the client
-        key = client_socket.recv(1024).decode().strip()
+
+        try:
+            key = client_socket.recv(1024).decode().strip()
+        except ConnectionResetError:
+            print("Client closed the connection.")
+            break
+
+        if not key:
+            print("Client disconnected unexpectedly.")
+            break
+        
         print(f"Received key: {key}")
 
         
