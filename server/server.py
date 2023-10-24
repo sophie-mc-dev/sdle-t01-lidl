@@ -118,6 +118,7 @@ def handle_client(client_socket):
                 client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
 
         elif key == "0":
+            client_socket.send("End of connection.".encode())
             break
 
     client_socket.close()

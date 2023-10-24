@@ -68,6 +68,8 @@ while True:
     if message.endswith(":"):
         key = input()
         client_socket.send(key.encode())
+    elif "End of connection." in message:
+        break
 
 
 # Close the client socket
