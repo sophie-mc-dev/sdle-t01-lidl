@@ -1,10 +1,13 @@
 import uuid
 from models import *
 
+
 # Local storage:
 #  - is a dictionary used for local storage of shopping lists,
 #  (simulated as an in-memory data structure)
 local_lists = {}
+#local_lists.append("2386a715-b513-4875-9553-1c3")
+
 
 # Cloud storage (simulated):
 # - is a dictionary simulating cloud storage for shopping lists

@@ -32,6 +32,30 @@ while not authenticated:
         print("Authentication failed. Please try again.")
 
 
+
+listed = False
+
+while not listed:
+    message = client_socket.recv(1024).decode()
+
+    if "1 - Create a new shopping list" in message:
+        print(message)
+        option = input("Option: ")
+        client_socket.send(option.encode())
+
+        message = client_socket.recv(1024).decode()
+
+        if "Please choose one of the list IDs:" in message:
+            print(message)
+            list_id = input("List ID: ")
+            client_socket.send(list_id.encode())
+
+    listed = True
+    
+
+
+
+
 # Continue with list management or other operations
 while True:
     # Receive and print the server's message
