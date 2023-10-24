@@ -1,6 +1,8 @@
 import socket
 import threading
 from operations import *
+import signal
+import sys
 
 # Create a socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,6 +62,13 @@ def handle_client(client_socket):
 
     client_socket.close()
 
+def signal_handler(sig, frame):
+    print("\nShutting down the server...")
+    server_socket.close()
+    sys.exit(0)
+
+# Register the signal handler
+signal.signal(signal.SIGINT, signal_handler)
 
 # Main server loop
 while True:

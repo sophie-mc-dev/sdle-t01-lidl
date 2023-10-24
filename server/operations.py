@@ -25,7 +25,18 @@ def add_item_to_list(list_id, name, quantity):
     if list_id not in local_lists:
         raise ValueError("List not found.")
 
-    local_lists[list_id].add_item(name, quantity)
+    # Check if the item already exists in the list
+    item_exists = False
+    for item in local_lists[list_id].items:
+        if item.name.lower() == name.lower():
+            item.quantity += quantity
+            item_exists = True
+            break
+
+    # If the item doesn't exist, add it to the list
+    if not item_exists:
+        local_lists[list_id].add_item(name, quantity)
+
     # Update the cloud storage
     cloud_storage[list_id] = local_lists[list_id]
 
