@@ -23,6 +23,7 @@ def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
 
     authenticated = False  # Track authentication status
+    #username = "user1"
 
     while not authenticated:
         # Authentication loop
@@ -44,14 +45,19 @@ def handle_client(client_socket):
     listed = False
 
     while not listed:
+
         if len(local_lists) == 0:
-            client_socket.send("Let's create a new shopping list.".encode())
+            to_send = "Let's create a new shopping list. \n"
             print("There are no active shooping lists. Let's create one.")
+            
             list_id = create_shopping_list()    # create new shopping list 
             user_list[username] = list_id       # associate user with a shopping list
+            
+            to_send = to_send + "Your list id is '" + list_id + "'."
+            client_socket.send(to_send.encode())
+
         else:
             client_socket.send("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list".encode())
-            #print("1 - Create a new shopping list \n 2 - Connect to an existent shopping list")
             option = client_socket.recv(1024).decode().strip()
 
             if option == "1":
@@ -92,8 +98,11 @@ def handle_client(client_socket):
             break
 
         if key == "1":
-            items = [str(item) for item in local_lists[list_id].items]
-            client_socket.send("\n".join(items).encode())
+            if len(local_lists[list_id].items) == 0:
+                client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
+            else:
+                items = [str(item) for item in local_lists[list_id].items]
+                client_socket.send("\n".join(items).encode())
 
         elif key == "2":
             client_socket.send("Name of the item:".encode())

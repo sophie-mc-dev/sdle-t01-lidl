@@ -13,10 +13,10 @@ user_list = {
 }
 
 # create one shooping list to test
-list_id = create_shopping_list()
-add_item_to_list(list_id, "Milk", 2)
-add_item_to_list(list_id, "Eggs", 1)
+#list_id = create_shopping_list()
+#add_item_to_list(list_id, "Milk", 2)
+#add_item_to_list(list_id, "Eggs", 1)
 
 # create one shooping list to test
-list_id = create_shopping_list()
-add_item_to_list(list_id, "Flour", 1)
+#list_id = create_shopping_list()
+#add_item_to_list(list_id, "Flour", 1)
