@@ -17,7 +17,10 @@ while not authenticated:
     message = client_socket.recv(1024).decode()
     #print(message)
 
-    if "Username" in message:
+    if "choice" in message:
+        choice = input("1 - Log in\n2 - Register\nYour choice:")
+        client_socket.send(choice.encode())
+    elif "Username" in message:
         username = input("Username: ")
         client_socket.send(username.encode())
 

@@ -18,6 +18,12 @@ server_socket.bind((host, port))
 server_socket.listen(5)  # 5 connections for now
 print("Server is listening...")
 
+def register_user(username, password):
+    if username in user_credentials:
+        return "Username already exists. Please choose a different one."
+    user_credentials[username] = password
+    return "Registration successful. You can now log in."
+
 # Function to handle a client
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
@@ -26,18 +32,35 @@ def handle_client(client_socket):
     #username = "user1"
 
     while not authenticated:
-        # Authentication loop
-        client_socket.send("Username:".encode())
-        username = client_socket.recv(1024).decode().strip()
+        client_socket.send("1 - Log in\n2 - Register\nYour choice:".encode())
+        choice = client_socket.recv(1024).decode().strip()
 
-        client_socket.send("Password:".encode())
-        password = client_socket.recv(1024).decode().strip()
 
-        if username in user_credentials and user_credentials[username] == password:
-            authenticated = True
-            client_socket.send("Authentication successful. You can now access your list.".encode())
+        if choice == "1":
+            # Authentication loop
+            client_socket.send("Username:".encode())
+            username = client_socket.recv(1024).decode().strip()
+
+            client_socket.send("Password:".encode())
+            password = client_socket.recv(1024).decode().strip()
+
+            if username in user_credentials and user_credentials[username] == password:
+                authenticated = True
+                client_socket.send("Authentication successful. You can now access your list.".encode())
+            else:
+                client_socket.send("Authentication failed. Please try again.".encode())
+        elif choice == "2":
+            client_socket.send("Choose a Username:".encode())
+            new_username = client_socket.recv(1024).decode().strip()
+
+            client_socket.send("Choose a Password:".encode())
+            new_password = client_socket.recv(1024).decode().strip()
+
+            registration_result = register_user(new_username, new_password)
+            client_socket.send(registration_result.encode())
         else:
-            client_socket.send("Authentication failed. Please try again.".encode())
+            client_socket.send("Invalid choice. Please choose 1 or 2.".encode())
+
 
 
     # Once authenticated, proceed with list management
