@@ -18,10 +18,25 @@ server_socket.bind((host, port))
 server_socket.listen(5)  # 5 connections for now
 print("Server is listening...")
 
+# Fetch data
+
+#credentials
+user_credentials = {}
+with open('db/user_credentials.txt', 'r') as file:
+    for line in file:
+        username, password = line.strip().split(':')
+        user_credentials[username] = password
+
+def save_credentials_to_file(credentials):
+    with open('db/user_credentials.txt', 'w') as file:
+        for username, password in credentials.items():
+            file.write(f"{username}:{password}\n")
+
 def register_user(username, password):
     if username in user_credentials:
         return "Username already exists. Please choose a different one."
     user_credentials[username] = password
+    save_credentials_to_file(user_credentials)
     return "Registration successful. You can now log in."
 
 # Function to handle a client
@@ -58,6 +73,10 @@ def handle_client(client_socket):
 
             registration_result = register_user(new_username, new_password)
             client_socket.send(registration_result.encode())
+            if ("Registration successful" in registration_result):
+                authenticated = True
+                username = new_username
+                user_list[username] = None 
         else:
             client_socket.send("Invalid choice. Please choose 1 or 2.".encode())
 

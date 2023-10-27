@@ -17,22 +17,14 @@ while not authenticated:
     message = client_socket.recv(1024).decode()
     #print(message)
 
-    if "choice" in message:
-        choice = input("1 - Log in\n2 - Register\nYour choice:")
-        client_socket.send(choice.encode())
-    elif "Username" in message:
-        username = input("Username: ")
-        client_socket.send(username.encode())
-
-    elif "Password" in message:
-        password = input("Password: ")
-        client_socket.send(password.encode())
-
-    elif "Authentication successful" in message:
+    if "Authentication successful" in message:
+        authenticated = True
+    if "Registration successful." in message:
         authenticated = True
 
     else:
-        print("Authentication failed. Please try again.")
+        choice = input(message)
+        client_socket.send(choice.encode())
 
 
 

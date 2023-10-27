@@ -1,10 +1,10 @@
 from operations import *
 
 # Dictionary to store username-password mappings
-user_credentials = {
-    "user1": "password1",
-    "user2": "password2",
-}
+#user_credentials = {
+#    "user1": "password1",
+#    "user2": "password2",
+#}
 
 # Dictionary to store username-list_id mappings
 user_list = {
