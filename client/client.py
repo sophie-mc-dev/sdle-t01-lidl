@@ -48,6 +48,8 @@ while not listed:
     else: # message = Let's create a new shopping list ... 
         print("There are no active shooping lists. Let's create one for you.")
         print(message)
+        list_id = input("List ID: ")
+        client_socket.send(list_id.encode())
 
 
     listed = True

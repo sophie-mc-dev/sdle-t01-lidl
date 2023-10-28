@@ -2,7 +2,7 @@ import socket
 import threading
 import signal
 import sys
-from auxiliar import *
+from operations import *
 
 # Create a socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,6 +27,19 @@ with open('db/user_credentials.txt', 'r') as file:
         username, password = line.strip().split(':')
         user_credentials[username] = password
 
+# user lists
+user_list = {}
+try:
+    with open('db/user_list.txt', 'r') as file:
+        for line in file:
+            username, listID = line.strip().split(':')
+            user_list[username] = listID
+except FileNotFoundError:
+    pass
+
+
+# list content
+
 def save_credentials_to_file(credentials):
     with open('db/user_credentials.txt', 'w') as file:
         for username, password in credentials.items():
@@ -38,6 +51,16 @@ def register_user(username, password):
     user_credentials[username] = password
     save_credentials_to_file(user_credentials)
     return "Registration successful. You can now log in."
+
+def save_user_list_to_file(credentials):
+    with open('db/user_list.txt', 'w') as file:
+        for username, listID in credentials.items():
+            file.write(f"{username}:{listID}\n")
+
+def register_list(username, listID):
+    user_list[username] = listID
+    save_user_list_to_file(user_list)
+    return "List Registration successful."
 
 # Function to handle a client
 def handle_client(client_socket):
@@ -88,12 +111,15 @@ def handle_client(client_socket):
 
     while not listed:
 
+    
+
+
         if len(local_lists) == 0:
             to_send = "Let's create a new shopping list. \n"
             print("There are no active shooping lists. Let's create one.")
             
             list_id = create_shopping_list()    # create new shopping list 
-            user_list[username] = list_id       # associate user with a shopping list
+            register_list(username, list_id)       # associate user with a shopping list
             
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
