@@ -18,25 +18,6 @@ server_socket.bind((host, port))
 server_socket.listen(5)  # 5 connections for now
 print("Server is listening...")
 
-# Fetch data
-
-#credentials
-user_credentials = {}
-with open('db/user_credentials.txt', 'r') as file:
-    for line in file:
-        username, password = line.strip().split(':')
-        user_credentials[username] = password
-
-# user lists
-user_list = {}
-try:
-    with open('db/user_list.txt', 'r') as file:
-        for line in file:
-            username, listID = line.strip().split(':')
-            user_list[username] = listID
-except FileNotFoundError:
-    pass
-
 
 # list content
 
@@ -52,27 +33,33 @@ def register_user(username, password):
     save_credentials_to_file(user_credentials)
     return "Registration successful. You can now log in."
 
-def save_user_list_to_file(credentials):
-    with open('db/user_list.txt', 'w') as file:
-        for username, listID in credentials.items():
-            file.write(f"{username}:{listID}\n")
 
-def register_list(username, listID):
-    user_list[username] = listID
-    save_user_list_to_file(user_list)
-    return "List Registration successful."
+def print_user_list():
+    try:
+        user_list = {}
+        with open('db/user_list.txt', 'r') as file:
+
+            for line in file:
+                username, listID = line.strip().split(':')
+                user_list[username] = listID
+    except FileNotFoundError:
+        pass
+
+    print("\n> User:ListID contents:")
+    for username, list_id in user_list.items():
+            print(f"{username}:{list_id}\n")
+
+
 
 # Function to handle a client
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
 
     authenticated = False  # Track authentication status
-    #username = "user1"
 
     while not authenticated:
-        client_socket.send("1 - Log in\n2 - Register\nYour choice:".encode())
+        client_socket.send("\n1 - Log in\n2 - Register\nYour choice:".encode())
         choice = client_socket.recv(1024).decode().strip()
-
 
         if choice == "1":
             # Authentication loop
@@ -87,6 +74,7 @@ def handle_client(client_socket):
                 client_socket.send("Authentication successful. You can now access your list.".encode())
             else:
                 client_socket.send("Authentication failed. Please try again.".encode())
+        
         elif choice == "2":
             client_socket.send("Choose a Username:".encode())
             new_username = client_socket.recv(1024).decode().strip()
@@ -111,18 +99,18 @@ def handle_client(client_socket):
 
     while not listed:
 
-    
 
-
-        if len(local_lists) == 0:
+        if len(user_list) == 0:
             to_send = "Let's create a new shopping list. \n"
             print("There are no active shooping lists. Let's create one.")
             
-            list_id = create_shopping_list()    # create new shopping list 
-            register_list(username, list_id)       # associate user with a shopping list
+            list_id = create_new_shopping_list(username) # create_shopping_list(username)    # create new shopping list 
+            #register_list(username, list_id)       # associate user with a shopping list
             
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
+            
+            print_user_list()
 
         else:
             client_socket.send("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list".encode())
@@ -130,26 +118,35 @@ def handle_client(client_socket):
 
             if option == "1":
                 client_socket.send("Let's create a new shopping list.".encode())
-                list_id = create_shopping_list()    # create new shopping list 
-                user_list[username] = list_id       # associate user with a shopping list
+                list_id = create_new_shopping_list(username) # create_shopping_list(username)    # create new shopping list 
+                #user_list[username] = list_id       # associate user with a shopping list
+
+                print_user_list()
 
             elif option == "2":                
                 to_send = "Please choose one of the list IDs:\n"
+
+                # get all the lists available
+                available_lists = []
+                for user_name, list_id in user_list.items():
+                    if list_id != None:
+                        available_lists.append(list_id)
+                available_lists = list(set(available_lists))
+
                 idx = 1
-                for list_id in local_lists:
-                    to_send += str(idx) + " - " + list_id + "\n"
+                for list_id in available_lists:
+                    to_send += str(idx) + " - " + str(list_id) + "\n"
                     idx = idx + 1
-                #print(to_send)
+
                 client_socket.send(to_send.encode())
                 option = client_socket.recv(1024).decode().strip()
 
-                aux = 1
-                for list_id in local_lists:
-                    if str(aux) == option:
-                        user_list[username] = list_id
-                        break
-                    else:
-                        aux = aux + 1
+                user_list[username] = available_lists[int(option) - 1]
+                save_shopping_list_to_file(user_list)
+
+                print_user_list()
+
+                
 
         listed = True
         
@@ -166,7 +163,7 @@ def handle_client(client_socket):
             break
 
         if key == "1":
-            if len(local_lists[list_id].items) == 0:
+            if len(local_lists) == 0:
                 client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
             else:
                 items = [str(item) for item in local_lists[list_id].items]

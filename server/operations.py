@@ -1,5 +1,7 @@
 import uuid
 from models import *
+#from auxiliar import *
+
 
 
 # Local storage:
@@ -11,6 +13,49 @@ local_lists = {}
 # Cloud storage (simulated):
 # - is a dictionary simulating cloud storage for shopping lists
 cloud_storage = {}
+
+
+
+# Fetch data
+
+#credentials
+user_credentials = {}
+with open('db/user_credentials.txt', 'r') as file:
+    for line in file:
+        username, password = line.strip().split(':')
+        user_credentials[username] = password
+
+# user lists
+user_list = {}
+try:
+    with open('db/user_list.txt', 'r') as file:
+        for line in file:
+            username, listID = line.strip().split(':')
+            user_list[username] = listID
+except FileNotFoundError:
+    pass
+
+
+
+
+def save_shopping_list_to_file(credentials):
+    with open('db/user_list.txt', 'w') as file: # Open in "write" mode ('w')
+        for username, list_id in credentials.items():
+            file.write(f"{username}:{list_id}\n")
+
+def register_shopping_list(username, list_id):
+    user_list[username] = list_id
+    save_shopping_list_to_file(user_list)
+    return "List Registration successful."
+
+def create_new_shopping_list(username):
+    list_id = str(uuid.uuid4())
+    register_shopping_list(username, list_id)
+    #local_lists[list_id] = ShoppingList(list_id)
+    #cloud_storage[list_id] = local_lists[list_id]
+    return list_id
+
+
 
 
 # Functions to Manage Shopping Lists:

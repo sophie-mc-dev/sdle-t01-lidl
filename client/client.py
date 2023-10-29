@@ -17,11 +17,9 @@ while not authenticated:
     message = client_socket.recv(1024).decode()
     #print(message)
 
-    if "Authentication successful" in message:
+    if "Authentication successful" in message or "Registration successful." in message:
+        print(message)
         authenticated = True
-    if "Registration successful." in message:
-        authenticated = True
-
     else:
         choice = input(message)
         client_socket.send(choice.encode())
