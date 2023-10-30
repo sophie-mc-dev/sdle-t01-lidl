@@ -10,6 +10,7 @@ port = 5555
 # Connect to the server
 client_socket.connect((host, port))
 
+client_list = ""
 authenticated = False
 
 while not authenticated:
@@ -25,33 +26,60 @@ while not authenticated:
         client_socket.send(choice.encode())
 
 
+def extract_list_id(message):
+    start_index = message.find("Your list id is '")
+
+    if start_index != -1:
+        end_index = message.find("'", start_index + len("Your list id is '"))
+
+        if end_index != -1:
+            list_id = message[start_index + len("Your list id is '"):end_index]
+            return list_id
+        else:
+            print("Closing single quote not found.")
+    else:
+        print("Message format not recognized.")
+    return None
+
 
 listed = False
 
 while not listed:
     message = client_socket.recv(1024).decode()
 
-    if "1 - Create a new shopping list" in message:
+    if "There are no active shooping lists." in message:
+        print(message) 
+
+        list_id = extract_list_id(message)
+        if list_id is not None:
+            client_list = list_id
+    
+    else:
         print(message)
         option = input("Option: ")
         client_socket.send(option.encode())
 
         message = client_socket.recv(1024).decode()
 
-        if "Please choose one of the list IDs:" in message:
+        if "Let's create a new shopping list." in message: # option 1
+            list_id = extract_list_id(message)
+            if list_id is not None:
+                client_list = list_id
+
+        elif "Please choose one of the list IDs:" in message: # option 2
             print(message)
             list_id = input("List ID: ")
             client_socket.send(list_id.encode())
 
-    else: # message = Let's create a new shopping list ... 
-        print("There are no active shooping lists. Let's create one for you.")
-        print(message)
-        list_id = input("List ID: ")
-        client_socket.send(list_id.encode())
+            message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
 
+            list_id = extract_list_id(message)
+            if list_id is not None:
+                client_list = list_id
 
     listed = True
     
+print("> You are associated with shopping list '", client_list, "'.")
 
 
 # Continue with list management or other operations

@@ -113,8 +113,8 @@ def handle_client(client_socket):
 
 
         if len(user_list) == 0:
-            to_send = "Let's create a new shopping list. \n"
-            print("There are no active shooping lists. Let's create one.")
+            to_send = "There are no active shooping lists. Let's create one for you. \n"
+            #print("There are no active shooping lists. Let's create one.")
             
             list_id = create_new_shopping_list(username) # create_shopping_list(username)    # create new shopping list 
             #register_list(username, list_id)       # associate user with a shopping list
@@ -129,11 +129,13 @@ def handle_client(client_socket):
             option = client_socket.recv(1024).decode().strip()
 
             if option == "1":
-                client_socket.send("Let's create a new shopping list.".encode())
-                list_id = create_new_shopping_list(username) # create_shopping_list(username)    # create new shopping list 
-                #user_list[username] = list_id       # associate user with a shopping list
+                to_send = "Let's create a new shopping list. \n"
+                list_id = create_new_shopping_list(username) # create new shopping list 
 
-                print_user_list()
+                to_send = to_send + "Your list id is '" + list_id + "'."
+                client_socket.send(to_send.encode())
+
+                #print_user_list()
 
             elif option == "2":                
                 to_send = "Please choose one of the list IDs:\n"
@@ -155,6 +157,9 @@ def handle_client(client_socket):
 
                 user_list[username] = available_lists[int(option) - 1]
                 save_shopping_list_to_file(user_list)
+
+                to_send = "Your list id is '" + user_list[username] + "'."
+                client_socket.send(to_send.encode())
 
                 print_user_list()
 
