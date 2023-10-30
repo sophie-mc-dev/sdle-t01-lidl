@@ -50,6 +50,18 @@ def print_user_list():
             print(f"{username}:{list_id}\n")
 
 
+import os
+
+def is_file_empty(filename):
+    try:
+        file_path = "./db/shopping_lists/" + filename + ".txt"
+        # Get the size of the file
+        file_size = os.path.getsize(file_path)
+        return file_size == 0
+    except FileNotFoundError:
+        # Handle the case where the file does not exist
+        return False
+
 
 # Function to handle a client
 def handle_client(client_socket):
@@ -163,10 +175,18 @@ def handle_client(client_socket):
             break
 
         if key == "1":
-            if len(local_lists) == 0:
+            if is_file_empty(user_list[username]) == True:
                 client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
             else:
-                items = [str(item) for item in local_lists[list_id].items]
+                items = []
+                try:
+                    with open("db/shopping_lists/" + list_id + ".txt", 'r') as file:
+                        for line in file:
+                            name, quantity, acquired = line.strip().split(':')
+                            string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                            items.append(string)
+                except FileNotFoundError:
+                    pass
                 client_socket.send("\n".join(items).encode())
 
         elif key == "2":
@@ -178,7 +198,7 @@ def handle_client(client_socket):
 
             try:
                 quantity = int(quantity)
-                add_item_to_list(list_id, name, quantity)
+                add_item_to_list_file(list_id, name, quantity)
             except ValueError:
                 client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
 
