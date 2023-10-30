@@ -1,2 +1,1 @@
-apple:5:False
-banana:10:False
+apple:33:False

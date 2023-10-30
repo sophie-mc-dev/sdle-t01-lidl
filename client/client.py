@@ -140,9 +140,11 @@ while True:
             item_quant = int(item_quant)
             #print_lists(client_list)
             add_item_to_list_file(client_username, item_name, item_quant)
-        
         except ValueError:
             print("Quantity must be an integer.")
+
+    elif message in "Syncronization done with success." or message in "The server is already syncronized with your list":
+        print(message)
 
     elif "End of connection." in message:
         break

@@ -51,7 +51,6 @@ import os
 import urllib.parse
 
 def create_file_from_url(url, folder_path, content):
-    print("comtent??  " + str(content))
     # Parse the URL to get the filename
     parsed_url = urllib.parse.urlparse(url)
     filename = os.path.basename(parsed_url.path) + '.txt'
@@ -109,7 +108,6 @@ def create_personal_client_list(username, list_id):
         # get content from list and write it in new personal client list
         file_content = []
         try:
-            print("   --->>  heree")
             with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
                 for line in file:
                     file_content.append(line)

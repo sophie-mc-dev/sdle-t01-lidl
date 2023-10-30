@@ -180,7 +180,6 @@ def handle_client(client_socket):
             # ----- This prints on the server terminal
             file_path = db_dir + "/shopping_lists/" + user_list[username] + ".txt"
             if is_file_empty(file_path) == True:
-                #client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
                 print("Your shopping list is empty in server. Syncronize it.")
             else:
                 items = []
@@ -192,9 +191,8 @@ def handle_client(client_socket):
                             items.append(string)
                 except FileNotFoundError:
                     pass
-                print("Your shopping list in server has the items:\n")
+                print("\nYour shopping list in server has the items:")
                 print("\n".join(items))
-                #client_socket.send("\n".join(items).encode())
             # ------
             
 
@@ -216,8 +214,92 @@ def handle_client(client_socket):
         elif key == "2":
             client_socket.send("Add Item".encode())
 
-        #elif key == "3": # later implement CRDTs here
-            # for now, only substitute the main client's shopping list with his personal list 
+        elif key == "3": # later implement CRDTs here
+
+            # for now, only substitute the server client's shopping list with the union of his personal list and the server list
+
+            client_items = []
+            try:
+                with open(db_dir + "/clients_lists/" + username + ".txt", 'r') as file:
+                    for line in file:
+                        client_items.append(line)
+            except FileNotFoundError:
+                pass
+
+            server_items = []
+            try:
+                with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+                    for line in file:
+                        server_items.append(line)
+            except FileNotFoundError:
+                pass
+
+
+            if is_file_empty(db_dir + "/shopping_lists/" + list_id + ".txt") == True:
+
+                # only write to sever list
+                items = []
+                try:
+                    with open(db_dir + "/clients_lists/" + username + ".txt", 'r') as file:
+                        for line in file:
+                            items.append(line)
+                except FileNotFoundError:
+                    pass
+                try:
+                    with open(db_dir + "/shopping_lists/" + list_id + '.txt', 'w') as file:
+                        for line in items:
+                            file.write(line)
+                except FileNotFoundError:
+                    pass
+
+                client_socket.send("Syncronization done with success. Your list does not change.\n".encode()) 
+
+            elif client_items != server_items:
+            
+                items = client_items + server_items
+
+                # write to both lists
+                try:
+                    with open(db_dir + "/clients_lists/" + username + '.txt', 'w') as file:
+                        for line in items:
+                            file.write(line)
+                except FileNotFoundError:
+                    pass
+
+                try:
+                    with open(db_dir + "/shopping_lists/" + list_id + '.txt', 'w') as file:
+                        for line in items:
+                            file.write(line)
+                except FileNotFoundError:
+                    pass
+
+                client_socket.send("Syncronization done with success. Your list have changed.\n".encode()) 
+
+            else: # client_items == server_items:
+                client_socket.send("The server is already syncronized with your list.\n".encode()) 
+
+
+
+
+            # ----- This prints on the server terminal
+            print("Syncronization done with success.")
+
+            file_path = db_dir + "/shopping_lists/" + user_list[username] + ".txt"
+            if is_file_empty(file_path) == True:
+                print("Your shopping list is empty in server.")
+            else:
+                items = []
+                try:
+                    with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+                        for line in file:
+                            name, quantity, acquired = line.strip().split(':')
+                            string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                            items.append(string)
+                except FileNotFoundError:
+                    pass
+                print("Your shopping list in server has the items:\n")
+                print("\n".join(items))
+            # ------            
 
 
         elif key == "0":
