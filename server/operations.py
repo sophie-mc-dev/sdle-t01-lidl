@@ -1,5 +1,6 @@
 import uuid
-from models import *
+#from models import *
+from server.models import *
 #from auxiliar import *
 
 
@@ -14,6 +15,14 @@ local_lists = {}
 # - is a dictionary simulating cloud storage for shopping lists
 cloud_storage = {}
 
+import sys
+from os.path import dirname, abspath
+
+parent_dir = dirname(dirname(abspath(__file__)))
+sys.path.append(parent_dir)
+
+db_dir = parent_dir + "/server/db"
+
 
 client_list = {}
 
@@ -21,7 +30,7 @@ client_list = {}
 
 #credentials
 user_credentials = {}
-with open('db/user_credentials.txt', 'r') as file:
+with open(db_dir + "/user_credentials.txt", 'r') as file:
     for line in file:
         username, password = line.strip().split(':')
         user_credentials[username] = password
@@ -29,7 +38,7 @@ with open('db/user_credentials.txt', 'r') as file:
 # user lists
 user_list = {}
 try:
-    with open('db/user_list.txt', 'r') as file:
+    with open(db_dir + "/user_list.txt", 'r') as file:
         for line in file:
             username, listID = line.strip().split(':')
             user_list[username] = listID
@@ -41,7 +50,8 @@ except FileNotFoundError:
 import os
 import urllib.parse
 
-def create_empty_file_from_url(url, folder_path="./db/shopping_lists"):
+def create_empty_file_from_url(url):
+    folder_path = db_dir + "/shopping_lists"
     # Parse the URL to get the filename
     parsed_url = urllib.parse.urlparse(url)
     filename = os.path.basename(parsed_url.path) + '.txt'
@@ -57,7 +67,7 @@ def create_empty_file_from_url(url, folder_path="./db/shopping_lists"):
 
 
 def save_shopping_list_to_file(credentials):
-    with open('db/user_list.txt', 'w') as file: # Open in "write" mode ('w')
+    with open(db_dir + "/user_list.txt", 'w') as file: # Open in "write" mode ('w')
         for username, list_id in credentials.items():
             file.write(f"{username}:{list_id}\n")
 
@@ -82,33 +92,41 @@ def create_new_shopping_list(username):
 #  adds an item to a shopping list given its list_id, name, and quantity
 def add_item_to_list_file(list_id, name, quantity):
 
+    # ler o conteudo do file
     file_content = []
-    #try:
-    #    with open("db/shopping_lists/" + list_id + ".txt", 'r') as file:
-    #        for line in file:
-    #            #item_name, quantity, acquired = line.strip().split(':')
-    #            file_content.append(line)      
-    #except FileNotFoundError:
-    #    raise ValueError("List not found.")
+    try:
+        with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+            for line in file:
+                #item_name, quantity, acquired = line.strip().split(':')
+                file_content.append(line)      
+    except FileNotFoundError:
+        raise ValueError("List not found.")
+    
+    # atualizar a list: preencher a shooping list com o conteudo do file 
+    client_list[list_id] = ShoppingList(list_id) # limpamos a shopping list
+    for file_line in file_content:
+        item_name, item_quantity, acquired = file_line.strip().split(':')
+        client_list[list_id].add_item(item_name, item_quantity)
 
-    # Check if the item already exists in the list
+    # adicionar o novo elemento:
+    # 1 - Check if the item already exists in the list
     item_exists = False
     for item in client_list[list_id].items:
         if item.name.lower() == name.lower():
             item.quantity += quantity
             item_exists = True
             break
-
-    # If the item doesn't exist, add it to the list
+    # 2 - If the item doesn't exist, add it to the list
     if not item_exists:
         client_list[list_id].add_item(name, quantity)
 
     # update file
+    file_content = []
     for item in client_list[list_id].items:
         new_item_line = item.name + ":" + str(item.quantity) + ":" + str(False) + "\n"
         file_content.append(new_item_line)
 
-    with open("db/shopping_lists/" + list_id + ".txt", 'w') as file:
+    with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'w') as file:
         for line in file_content:
             file.write(line)
 
@@ -118,6 +136,9 @@ def add_item_to_list_file(list_id, name, quantity):
 
 
 # ------------------------
+
+
+
 
 # creates a new shopping list and returns its unique list_id
 def create_shopping_list():

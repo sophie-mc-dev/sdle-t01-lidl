@@ -2,7 +2,18 @@ import socket
 import threading
 import signal
 import sys
-from operations import *
+#from operations import *
+
+from os.path import dirname, abspath
+
+parent_dir = dirname(dirname(abspath(__file__)))
+sys.path.append(parent_dir)
+
+from .auxiliar import *
+from .operations import *
+
+db_dir = parent_dir + "/server/db"
+
 
 # Create a socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,7 +33,7 @@ print("Server is listening...")
 # list content
 
 def save_credentials_to_file(credentials):
-    with open('db/user_credentials.txt', 'w') as file:
+    with open(db_dir + '/user_credentials.txt', 'w') as file:
         for username, password in credentials.items():
             file.write(f"{username}:{password}\n")
 
@@ -37,7 +48,7 @@ def register_user(username, password):
 def print_user_list():
     try:
         user_list = {}
-        with open('db/user_list.txt', 'r') as file:
+        with open(db_dir + '/user_list.txt', 'r') as file:
 
             for line in file:
                 username, listID = line.strip().split(':')
@@ -54,7 +65,7 @@ import os
 
 def is_file_empty(filename):
     try:
-        file_path = "./db/shopping_lists/" + filename + ".txt"
+        file_path = db_dir + "/shopping_lists/" + filename + ".txt"
         # Get the size of the file
         file_size = os.path.getsize(file_path)
         return file_size == 0
@@ -122,7 +133,7 @@ def handle_client(client_socket):
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
             
-            print_user_list()
+            #print_user_list()
 
         else:
             client_socket.send("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list".encode())
@@ -161,7 +172,7 @@ def handle_client(client_socket):
                 to_send = "Your list id is '" + user_list[username] + "'."
                 client_socket.send(to_send.encode())
 
-                print_user_list()
+                #print_user_list()
 
                 
 
@@ -180,13 +191,16 @@ def handle_client(client_socket):
             break
 
         if key == "1":
+            print("is it empty? " + str(is_file_empty(user_list[username])))
             if is_file_empty(user_list[username]) == True:
                 client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
             else:
+                print("... its not empty ")
                 items = []
                 try:
-                    with open("db/shopping_lists/" + list_id + ".txt", 'r') as file:
+                    with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
                         for line in file:
+                            print(line)
                             name, quantity, acquired = line.strip().split(':')
                             string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
                             items.append(string)
@@ -195,7 +209,9 @@ def handle_client(client_socket):
                 client_socket.send("\n".join(items).encode())
 
         elif key == "2":
-            client_socket.send("Name of the item:".encode())
+            client_socket.send("Add Item".encode())
+            
+            """client_socket.send("Name of the item:".encode())
             name = client_socket.recv(1024).decode().strip()
 
             client_socket.send("Quantity:".encode())
@@ -206,6 +222,7 @@ def handle_client(client_socket):
                 add_item_to_list_file(list_id, name, quantity)
             except ValueError:
                 client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
+                """
 
         elif key == "0":
             client_socket.send("End of connection.".encode())

@@ -1,5 +1,14 @@
 import socket
 
+import sys
+from os.path import dirname, abspath
+
+
+parent_dir = dirname(dirname(abspath(__file__)))
+sys.path.append(parent_dir)
+
+from server.operations import *
+
 # Create a socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -86,11 +95,26 @@ print("> You are associated with shopping list '", client_list, "'.")
 while True:
     # Receive and print the server's message
     message = client_socket.recv(1024).decode()
-    print(message)
+    if not message.endswith(":"):
+        print(message)
 
     if message.endswith(":"):
-        key = input()
+        print(message)
+        key = input("Option: ")
         client_socket.send(key.encode())
+
+    elif message in "Add Item":
+        item_name = input("> Name of the item: ")
+        item_quant = input("> Quantity: ")
+
+        try:
+            item_quant = int(item_quant)
+            #print_lists(client_list)
+            add_item_to_list_file(client_list, item_name, item_quant)
+        
+        except ValueError:
+            print("Quantity must be an integer.")
+
     elif "End of connection." in message:
         break
 
