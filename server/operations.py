@@ -50,8 +50,8 @@ except FileNotFoundError:
 import os
 import urllib.parse
 
-def create_empty_file_from_url(url):
-    folder_path = db_dir + "/shopping_lists"
+def create_file_from_url(url, folder_path, content):
+    print("comtent??  " + str(content))
     # Parse the URL to get the filename
     parsed_url = urllib.parse.urlparse(url)
     filename = os.path.basename(parsed_url.path) + '.txt'
@@ -59,11 +59,14 @@ def create_empty_file_from_url(url):
     # Join the folder_path and filename to create the full file path
     file_path = os.path.join(folder_path, filename)
 
-    # Create an empty file
-    with open(file_path, 'w') as file:
-        pass
-
-    return file_path
+    # Create a file
+    try: 
+        with open(file_path, 'w') as file:
+            for line in content:
+                file.write(line)
+    except:
+        with open(file_path, 'w') as file:
+            pass
 
 
 def save_shopping_list_to_file(credentials):
@@ -79,10 +82,43 @@ def register_shopping_list(username, list_id):
 def create_new_shopping_list(username):
     list_id = str(uuid.uuid4())
     register_shopping_list(username, list_id)
-    create_empty_file_from_url(list_id)
+    create_file_from_url(list_id, db_dir + "/shopping_lists", [])
     client_list[list_id] = ShoppingList(list_id)
     #cloud_storage[list_id] = local_lists[list_id]
     return list_id
+
+
+import os
+
+def is_file_empty(file_path):
+    try:
+        # Get the size of the file
+        file_size = os.path.getsize(file_path)
+        return file_size == 0
+    except FileNotFoundError:
+        # Handle the case where the file does not exist
+        return False
+    
+def create_personal_client_list(username, list_id):
+    # check if list_id already has some content
+    file_path = db_dir + "/shopping_lists/" + list_id + ".txt"
+    if is_file_empty(file_path) == True:
+        # create an empty file
+        create_file_from_url(username, db_dir + "/clients_lists", [])
+    else:
+        # get content from list and write it in new personal client list
+        file_content = []
+        try:
+            print("   --->>  heree")
+            with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+                for line in file:
+                    file_content.append(line)
+            create_file_from_url(username, db_dir + "/clients_lists", file_content)
+            
+        except FileNotFoundError:
+            pass
+        
+
 
 
 
@@ -90,12 +126,12 @@ def create_new_shopping_list(username):
 # Functions to Manage Shopping Lists:
 
 #  adds an item to a shopping list given its list_id, name, and quantity
-def add_item_to_list_file(list_id, name, quantity):
+def add_item_to_list_file(username, name, quantity):
 
     # ler o conteudo do file
     file_content = []
     try:
-        with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+        with open(db_dir + "/clients_lists/" + username + ".txt", 'r') as file:
             for line in file:
                 #item_name, quantity, acquired = line.strip().split(':')
                 file_content.append(line)      
@@ -103,36 +139,33 @@ def add_item_to_list_file(list_id, name, quantity):
         raise ValueError("List not found.")
     
     # atualizar a list: preencher a shooping list com o conteudo do file 
-    client_list[list_id] = ShoppingList(list_id) # limpamos a shopping list
+    client_list[username] = ShoppingList(username) # limpamos a shopping list
     for file_line in file_content:
         item_name, item_quantity, acquired = file_line.strip().split(':')
-        client_list[list_id].add_item(item_name, item_quantity)
+        client_list[username].add_item(item_name, item_quantity)
 
     # adicionar o novo elemento:
     # 1 - Check if the item already exists in the list
     item_exists = False
-    for item in client_list[list_id].items:
+    for item in client_list[username].items:
         if item.name.lower() == name.lower():
             item.quantity += quantity
             item_exists = True
             break
     # 2 - If the item doesn't exist, add it to the list
     if not item_exists:
-        client_list[list_id].add_item(name, quantity)
+        client_list[username].add_item(name, quantity)
 
     # update file
     file_content = []
-    for item in client_list[list_id].items:
+    for item in client_list[username].items:
         new_item_line = item.name + ":" + str(item.quantity) + ":" + str(False) + "\n"
         file_content.append(new_item_line)
 
-    with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'w') as file:
+    with open(db_dir + "/clients_lists/" + username + ".txt", 'w') as file:
         for line in file_content:
             file.write(line)
 
-
-    # Update the cloud storage
-    #cloud_storage[list_id] = local_lists[list_id]
 
 
 # ------------------------

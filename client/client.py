@@ -20,20 +20,6 @@ port = 5555
 client_socket.connect((host, port))
 
 client_list = ""
-authenticated = False
-
-while not authenticated:
-    # Authentication loop
-    message = client_socket.recv(1024).decode()
-    #print(message)
-
-    if "Authentication successful" in message or "Registration successful." in message:
-        print(message)
-        authenticated = True
-    else:
-        choice = input(message)
-        client_socket.send(choice.encode())
-
 
 def extract_list_id(message):
     start_index = message.find("Your list id is '")
@@ -50,6 +36,39 @@ def extract_list_id(message):
         print("Message format not recognized.")
     return None
 
+def extract_username(message):
+    start_index = message.find("Your username is '")
+
+    if start_index != -1:
+        end_index = message.find("'", start_index + len("Your username is '"))
+
+        if end_index != -1:
+            username = message[start_index + len("Your username is '"):end_index]
+            return username
+        else:
+            print("Closing single quote not found.")
+    else:
+        print("Message format not recognized.")
+    return None
+
+authenticated = False
+
+while not authenticated:
+    # Authentication loop
+    message = client_socket.recv(1024).decode()
+    #print(message)
+
+    if "Authentication successful" in message or "Registration successful." in message:
+        print(message)
+        username = extract_username(message)
+        if username is not None:
+            client_username = username
+        authenticated = True
+    else:
+        choice = input(message)
+        client_socket.send(choice.encode())
+
+
 
 listed = False
 
@@ -62,6 +81,12 @@ while not listed:
         list_id = extract_list_id(message)
         if list_id is not None:
             client_list = list_id
+        
+        # create a personal shopping list (copy from the oriinal),
+        # this list is not shared with anybody
+        create_personal_client_list(client_username, client_list)
+
+
     
     else:
         print(message)
@@ -74,6 +99,8 @@ while not listed:
             list_id = extract_list_id(message)
             if list_id is not None:
                 client_list = list_id
+            create_personal_client_list(client_username, client_list)
+
 
         elif "Please choose one of the list IDs:" in message: # option 2
             print(message)
@@ -85,6 +112,8 @@ while not listed:
             list_id = extract_list_id(message)
             if list_id is not None:
                 client_list = list_id
+
+            create_personal_client_list(client_username, client_list)
 
     listed = True
     
@@ -110,7 +139,7 @@ while True:
         try:
             item_quant = int(item_quant)
             #print_lists(client_list)
-            add_item_to_list_file(client_list, item_name, item_quant)
+            add_item_to_list_file(client_username, item_name, item_quant)
         
         except ValueError:
             print("Quantity must be an integer.")

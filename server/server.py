@@ -58,20 +58,9 @@ def print_user_list():
 
     print("\n> User:ListID contents:")
     for username, list_id in user_list.items():
-            print(f"{username}:{list_id}\n")
+            print(f"{username}:{list_id}")
 
 
-import os
-
-def is_file_empty(filename):
-    try:
-        file_path = db_dir + "/shopping_lists/" + filename + ".txt"
-        # Get the size of the file
-        file_size = os.path.getsize(file_path)
-        return file_size == 0
-    except FileNotFoundError:
-        # Handle the case where the file does not exist
-        return False
 
 
 # Function to handle a client
@@ -94,7 +83,8 @@ def handle_client(client_socket):
 
             if username in user_credentials and user_credentials[username] == password:
                 authenticated = True
-                client_socket.send("Authentication successful. You can now access your list.".encode())
+                to_send = "Authentication successful. You can now access your list.\nYour username is '" + username + "'"
+                client_socket.send(to_send.encode())
             else:
                 client_socket.send("Authentication failed. Please try again.".encode())
         
@@ -106,7 +96,8 @@ def handle_client(client_socket):
             new_password = client_socket.recv(1024).decode().strip()
 
             registration_result = register_user(new_username, new_password)
-            client_socket.send(registration_result.encode())
+            to_send = registration_result + "\nYour username is '" + new_username + "'"
+            client_socket.send(to_send.encode())
             if ("Registration successful" in registration_result):
                 authenticated = True
                 username = new_username
@@ -122,14 +113,10 @@ def handle_client(client_socket):
 
     while not listed:
 
-
         if len(user_list) == 0:
             to_send = "There are no active shooping lists. Let's create one for you. \n"
-            #print("There are no active shooping lists. Let's create one.")
             
-            list_id = create_new_shopping_list(username) # create_shopping_list(username)    # create new shopping list 
-            #register_list(username, list_id)       # associate user with a shopping list
-            
+            list_id = create_new_shopping_list(username) # create new shopping list 
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
             
@@ -174,7 +161,6 @@ def handle_client(client_socket):
 
                 #print_user_list()
 
-                
 
         listed = True
         
@@ -183,7 +169,7 @@ def handle_client(client_socket):
 
 
     while True:
-        client_socket.send("\nPress 1 to see list, 2 to add element, or 0 to exit:".encode())
+        client_socket.send("\nPress 1 to see list, 2 to add element, 3 to server syncronization or 0 to exit:".encode())
         key = client_socket.recv(1024).decode().strip()
 
         if not key:
@@ -191,16 +177,35 @@ def handle_client(client_socket):
             break
 
         if key == "1":
-            print("is it empty? " + str(is_file_empty(user_list[username])))
-            if is_file_empty(user_list[username]) == True:
-                client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
+            # ----- This prints on the server terminal
+            file_path = db_dir + "/shopping_lists/" + user_list[username] + ".txt"
+            if is_file_empty(file_path) == True:
+                #client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
+                print("Your shopping list is empty in server. Syncronize it.")
             else:
-                print("... its not empty ")
                 items = []
                 try:
                     with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
                         for line in file:
-                            print(line)
+                            name, quantity, acquired = line.strip().split(':')
+                            string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                            items.append(string)
+                except FileNotFoundError:
+                    pass
+                print("Your shopping list in server has the items:\n")
+                print("\n".join(items))
+                #client_socket.send("\n".join(items).encode())
+            # ------
+            
+
+            file_path = db_dir + "/clients_lists/" + username + ".txt"
+            if is_file_empty(file_path) == True:
+                client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
+            else:
+                items = []
+                try:
+                    with open(db_dir + "/clients_lists/" + username + ".txt", 'r') as file:
+                        for line in file:
                             name, quantity, acquired = line.strip().split(':')
                             string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
                             items.append(string)
@@ -210,19 +215,10 @@ def handle_client(client_socket):
 
         elif key == "2":
             client_socket.send("Add Item".encode())
-            
-            """client_socket.send("Name of the item:".encode())
-            name = client_socket.recv(1024).decode().strip()
 
-            client_socket.send("Quantity:".encode())
-            quantity = client_socket.recv(1024).decode().strip()
+        #elif key == "3": # later implement CRDTs here
+            # for now, only substitute the main client's shopping list with his personal list 
 
-            try:
-                quantity = int(quantity)
-                add_item_to_list_file(list_id, name, quantity)
-            except ValueError:
-                client_socket.send("Invalid quantity. Please enter a valid integer.".encode())
-                """
 
         elif key == "0":
             client_socket.send("End of connection.".encode())
