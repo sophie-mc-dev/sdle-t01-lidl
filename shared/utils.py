@@ -110,3 +110,34 @@ def print_user_list():
     for username, list_id in user_list.items():
             print(f"{username}:{list_id}")
 
+
+def extract_list_id(message):
+    start_index = message.find("Your list id is '")
+
+    if start_index != -1:
+        end_index = message.find("'", start_index + len("Your list id is '"))
+
+        if end_index != -1:
+            list_id = message[start_index + len("Your list id is '"):end_index]
+            return list_id
+        else:
+            print("Closing single quote not found.")
+    else:
+        print("Message format not recognized.")
+    return None
+
+
+def extract_username(message):
+    start_index = message.find("Your username is '")
+
+    if start_index != -1:
+        end_index = message.find("'", start_index + len("Your username is '"))
+
+        if end_index != -1:
+            username = message[start_index + len("Your username is '"):end_index]
+            return username
+        else:
+            print("Closing single quote not found.")
+    else:
+        print("Message format not recognized.")
+    return None

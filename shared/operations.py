@@ -3,7 +3,7 @@ from .models import *
 from .utils import *
 
 
-# Functions to create and save Shopping Lists:
+# Functions to Manage Shopping Lists:
 
 def create_personal_client_list(username, list_id):
     # check if list_id already has some content
@@ -42,7 +42,7 @@ def create_new_shopping_list(username):
 
     
 
-# Functions to Manage Shopping Lists:
+# Functions to Manage Shopping Lists Items:
 
 #  adds an item to a shopping list given its list_id, name, and quantity
 def add_item_to_list_file(username, name, quantity):

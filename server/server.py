@@ -2,7 +2,6 @@ import socket
 import threading
 import signal
 import sys
-
 from os.path import dirname, abspath
 
 parent_dir = dirname(dirname(abspath(__file__)))
@@ -80,7 +79,8 @@ def handle_client(client_socket):
     while not listed:
 
         if len(user_list) == 0:
-            to_send = "There are no active shooping lists. Let's create one for you. \n"
+            to_send = "No active shooping lists.\n"
+            #to_send = "There are no active shooping lists. Let's create one for you.\n"
             
             list_id = create_new_shopping_list(username) # create new shopping list 
             to_send = to_send + "Your list id is '" + list_id + "'."
@@ -89,11 +89,13 @@ def handle_client(client_socket):
             #print_user_list()
 
         else:
-            client_socket.send("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list".encode())
+            client_socket.send("There already are active shooping lists".encode())
+            #client_socket.send("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list".encode())
             option = client_socket.recv(1024).decode().strip()
 
             if option == "1":
-                to_send = "Let's create a new shopping list. \n"
+                to_send = "Create new shopping list"
+                #to_send = "Let's create a new shopping list. \n"
                 list_id = create_new_shopping_list(username) # create new shopping list 
 
                 to_send = to_send + "Your list id is '" + list_id + "'."
@@ -102,7 +104,7 @@ def handle_client(client_socket):
                 #print_user_list()
 
             elif option == "2":                
-                to_send = "Please choose one of the list IDs:\n"
+                to_send = "\nChoose one list ID:\n"
 
                 # get all the lists available
                 available_lists = []
@@ -135,14 +137,14 @@ def handle_client(client_socket):
 
 
     while True:
-        client_socket.send("\nPress 1 to see list, 2 to add element, 3 to delete element, 4 to server syncronization or 0 to exit:".encode())
+        client_socket.send("Show menu.\n".encode())
         key = client_socket.recv(1024).decode().strip()
 
         if not key:
             print("Client disconnected unexpectedly.")
             break
 
-        if key == "1":
+        elif key == "1":
             # ----- This prints on the server terminal
             file_path = db_dir + "/server_data/shopping_lists/" + user_list[username] + ".txt"
             if is_file_empty(file_path) == True:
@@ -157,21 +159,21 @@ def handle_client(client_socket):
                             items.append(string)
                 except FileNotFoundError:
                     pass
-                print("\nYour shopping list in server has the items:")
-                print("\n".join(items))
+                print("\nYour shopping list in server has the items:" + "\n".join(items))
             # ------
             
 
             file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
             if is_file_empty(file_path) == True:
-                client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
+                client_socket.send("Empty list".encode())
             else:
                 items = []
+                items.append("Your list content:")
                 try:
                     with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
                         for line in file:
                             name, quantity, acquired = line.strip().split(':')
-                            string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                            string = "- [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
                             items.append(string)
                 except FileNotFoundError:
                     pass
@@ -275,7 +277,6 @@ def handle_client(client_socket):
                 print("Your shopping list in server has the items:\n")
                 print("\n".join(items))
             # ------            
-
 
         elif key == "0":
             client_socket.send("End of connection.".encode())
