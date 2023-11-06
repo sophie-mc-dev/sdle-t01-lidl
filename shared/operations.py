@@ -118,13 +118,35 @@ def add_item_to_list_file(username, name, quantity):
 
 
 # delete_item_from_list() deletes an item from a shopping list based on its item_id
-def delete_item_from_list(list_id, item_id):
-    if list_id not in local_lists:
+def delete_item_from_list_file(username, item_idx):
+    # ler o conteudo do file
+    file_content = []
+    try:
+        with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+            for line in file:
+                #item_name, quantity, acquired = line.strip().split(':')
+                file_content.append(line)      
+    except FileNotFoundError:
         raise ValueError("List not found.")
+    
+    file_content.pop(item_idx) 
 
-    local_lists[list_id].delete_item(item_id)
-    # Update the cloud storage
-    cloud_storage[list_id] = local_lists[list_id]
+    # atualizar a list: preencher a shooping list com o conteudo do file 
+    client_list[username] = ShoppingList(username) # limpamos a shopping list
+    for file_line in file_content:
+        item_name, item_quantity, acquired = file_line.strip().split(':')
+        client_list[username].add_item(item_name, item_quantity)
+
+    # update file
+    with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'w') as file:
+        for line in file_content:
+            file.write(line)
+
+    return "Item deleted with success.\n"
+
+
+
+    
 
 # marks an item as acquired based on its item_id
 def acquire_item(list_id, item_id):

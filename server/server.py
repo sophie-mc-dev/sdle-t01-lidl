@@ -135,7 +135,7 @@ def handle_client(client_socket):
 
 
     while True:
-        client_socket.send("\nPress 1 to see list, 2 to add element, 3 to server syncronization or 0 to exit:".encode())
+        client_socket.send("\nPress 1 to see list, 2 to add element, 3 to delete element, 4 to server syncronization or 0 to exit:".encode())
         key = client_socket.recv(1024).decode().strip()
 
         if not key:
@@ -179,8 +179,11 @@ def handle_client(client_socket):
 
         elif key == "2":
             client_socket.send("Add Item".encode())
+        
+        elif key == "3":
+            client_socket.send("Delete Item".encode())
 
-        elif key == "3": # later implement CRDTs here
+        elif key == "4": # later implement CRDTs here
 
             # for now, only substitute the server client's shopping list with the union of his personal list and the server list
 

@@ -86,8 +86,6 @@ while not listed:
         # this list is not shared with anybody
         create_personal_client_list(client_username, client_list)
 
-
-    
     else:
         print(message)
         option = input("Option: ")
@@ -100,7 +98,6 @@ while not listed:
             if list_id is not None:
                 client_list = list_id
             create_personal_client_list(client_username, client_list)
-
 
         elif "Please choose one of the list IDs:" in message: # option 2
             print(message)
@@ -138,10 +135,38 @@ while True:
 
         try:
             item_quant = int(item_quant)
-            #print_lists(client_list)
             add_item_to_list_file(client_username, item_name, item_quant)
         except ValueError:
             print("Quantity must be an integer.")
+
+    elif message in "Delete Item":
+
+        file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
+        if is_file_empty(file_path) == True:
+            print("\nYou have no items to delete.\n")
+        else:
+            to_print = "\nChoose an item to delete: \n"
+            items = []
+            try:
+                with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+                    idx = 1
+                    for line in file:
+                        name, quantity, acquired = line.strip().split(':')
+                        string = str(idx) + " - [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                        items.append(string)
+                        idx += 1
+            except FileNotFoundError:
+                pass
+            to_print += "\n".join(items)
+            print(to_print)
+
+            item_number = input("> Item number: ")
+
+            try:
+                item_number = int(item_number)
+                print(delete_item_from_list_file(client_username, item_number-1))
+            except ValueError:
+                print("Item number must be an integer.")
 
     elif message in "Syncronization done with success." or message in "The server is already syncronized with your list":
         print(message)
