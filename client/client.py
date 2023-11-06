@@ -7,7 +7,7 @@ from os.path import dirname, abspath
 parent_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(parent_dir)
 
-from server.operations import *
+from shared.operations import *
 
 # Create a socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

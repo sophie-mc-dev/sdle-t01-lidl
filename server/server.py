@@ -2,17 +2,15 @@ import socket
 import threading
 import signal
 import sys
-#from operations import *
 
 from os.path import dirname, abspath
 
 parent_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(parent_dir)
 
-from .auxiliar import *
-from .operations import *
+from shared.operations import *
+from shared.utils import *
 
-db_dir = parent_dir + "/server/db"
 
 
 # Create a socket
@@ -28,38 +26,6 @@ server_socket.bind((host, port))
 # Listen for incoming connections
 server_socket.listen(5)  # 5 connections for now
 print("Server is listening...")
-
-
-# list content
-
-def save_credentials_to_file(credentials):
-    with open(db_dir + '/user_credentials.txt', 'w') as file:
-        for username, password in credentials.items():
-            file.write(f"{username}:{password}\n")
-
-def register_user(username, password):
-    if username in user_credentials:
-        return "Username already exists. Please choose a different one."
-    user_credentials[username] = password
-    save_credentials_to_file(user_credentials)
-    return "Registration successful. You can now log in."
-
-
-def print_user_list():
-    try:
-        user_list = {}
-        with open(db_dir + '/user_list.txt', 'r') as file:
-
-            for line in file:
-                username, listID = line.strip().split(':')
-                user_list[username] = listID
-    except FileNotFoundError:
-        pass
-
-    print("\n> User:ListID contents:")
-    for username, list_id in user_list.items():
-            print(f"{username}:{list_id}")
-
 
 
 
@@ -178,13 +144,13 @@ def handle_client(client_socket):
 
         if key == "1":
             # ----- This prints on the server terminal
-            file_path = db_dir + "/shopping_lists/" + user_list[username] + ".txt"
+            file_path = db_dir + "/server_data/shopping_lists/" + user_list[username] + ".txt"
             if is_file_empty(file_path) == True:
                 print("Your shopping list is empty in server. Syncronize it.")
             else:
                 items = []
                 try:
-                    with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+                    with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
                         for line in file:
                             name, quantity, acquired = line.strip().split(':')
                             string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
@@ -196,13 +162,13 @@ def handle_client(client_socket):
             # ------
             
 
-            file_path = db_dir + "/clients_lists/" + username + ".txt"
+            file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
             if is_file_empty(file_path) == True:
                 client_socket.send("Your shopping list is empty. Try to add some items to your list.".encode())
             else:
                 items = []
                 try:
-                    with open(db_dir + "/clients_lists/" + username + ".txt", 'r') as file:
+                    with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
                         for line in file:
                             name, quantity, acquired = line.strip().split(':')
                             string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
@@ -220,7 +186,7 @@ def handle_client(client_socket):
 
             client_items = []
             try:
-                with open(db_dir + "/clients_lists/" + username + ".txt", 'r') as file:
+                with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
                     for line in file:
                         client_items.append(line)
             except FileNotFoundError:
@@ -228,52 +194,58 @@ def handle_client(client_socket):
 
             server_items = []
             try:
-                with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+                with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
                     for line in file:
                         server_items.append(line)
             except FileNotFoundError:
                 pass
 
-
-            if is_file_empty(db_dir + "/shopping_lists/" + list_id + ".txt") == True:
+            
+            # if server list is empty 
+            if is_file_empty(db_dir + "/server_data/shopping_lists/" + list_id + ".txt") == True:
 
                 # only write to sever list
                 items = []
                 try:
-                    with open(db_dir + "/clients_lists/" + username + ".txt", 'r') as file:
+                    with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
                         for line in file:
                             items.append(line)
                 except FileNotFoundError:
                     pass
-                try:
-                    with open(db_dir + "/shopping_lists/" + list_id + '.txt', 'w') as file:
-                        for line in items:
-                            file.write(line)
-                except FileNotFoundError:
-                    pass
+                # if client list has some content, write it to server list
+                if len(items) != 0:
+                    try:
+                        with open(db_dir + "/server_data/shopping_lists/" + list_id + '.txt', 'w') as file:
+                            for line in items:
+                                file.write(line)
+                    except FileNotFoundError:
+                        pass
 
-                client_socket.send("Syncronization done with success. Your list does not change.\n".encode()) 
+                    client_socket.send("Syncronization done with success. Your list does not change.\n".encode()) 
+                else: 
+                    client_socket.send("Syncronization done with success. No content need update.\n".encode()) 
+
 
             elif client_items != server_items:
             
-                items = client_items + server_items
+                items = list(set(client_items + server_items))
 
                 # write to both lists
                 try:
-                    with open(db_dir + "/clients_lists/" + username + '.txt', 'w') as file:
+                    with open(db_dir + "/client_data/clients_lists/" + username + '.txt', 'w') as file:
                         for line in items:
                             file.write(line)
                 except FileNotFoundError:
                     pass
 
                 try:
-                    with open(db_dir + "/shopping_lists/" + list_id + '.txt', 'w') as file:
+                    with open(db_dir + "/server_data/shopping_lists/" + list_id + '.txt', 'w') as file:
                         for line in items:
                             file.write(line)
                 except FileNotFoundError:
                     pass
 
-                client_socket.send("Syncronization done with success. Your list have changed.\n".encode()) 
+                client_socket.send("Syncronization done with success.\n".encode()) 
 
             else: # client_items == server_items:
                 client_socket.send("The server is already syncronized with your list.\n".encode()) 
@@ -284,13 +256,13 @@ def handle_client(client_socket):
             # ----- This prints on the server terminal
             print("Syncronization done with success.")
 
-            file_path = db_dir + "/shopping_lists/" + user_list[username] + ".txt"
+            file_path = db_dir + "/server_data/shopping_lists/" + user_list[username] + ".txt"
             if is_file_empty(file_path) == True:
                 print("Your shopping list is empty in server.")
             else:
                 items = []
                 try:
-                    with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
+                    with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
                         for line in file:
                             name, quantity, acquired = line.strip().split(':')
                             string = "[Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
