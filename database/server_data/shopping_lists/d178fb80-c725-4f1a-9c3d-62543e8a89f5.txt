@@ -1,2 +1,0 @@
-banana:5:False
-apple:4:False

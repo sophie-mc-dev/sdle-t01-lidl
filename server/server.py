@@ -25,7 +25,7 @@ server_socket.bind((host, port))
 
 # Listen for incoming connections
 server_socket.listen(5)  # 5 connections for now
-print("Server is listening...")
+print("\nServer is listening...")
 
 
 
