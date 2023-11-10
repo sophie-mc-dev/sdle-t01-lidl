@@ -207,11 +207,6 @@ def handle_client(client_socket):
             # send new items and message output to client
             client_socket.send(str_to_send.encode())
 
-
-        elif key == "0":
-            client_socket.send("End of connection.".encode())
-            break
-
     client_socket.close()
 
 def signal_handler(sig, frame):

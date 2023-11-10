@@ -210,7 +210,8 @@ while True:
 
             print(sync_output)
 
-        elif "End of connection" in message:
+        elif key == "0":
+            print("End of connection.\n")
             break
 
 
