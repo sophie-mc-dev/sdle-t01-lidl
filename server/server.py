@@ -85,7 +85,6 @@ def handle_client(client_socket):
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
             
-            #print_user_list()
 
         else:
             client_socket.send("There already are active shooping lists".encode())
@@ -97,9 +96,7 @@ def handle_client(client_socket):
                 list_id = create_new_shopping_list(username)  
 
                 to_send = to_send + "Your list id is '" + list_id + "'."
-                client_socket.send(to_send.encode())
-
-                #print_user_list()
+                client_socket.send(to_send.encode())  
 
             elif option == "2":                
                 to_send = "\nChoose one list ID:\n"
@@ -125,9 +122,7 @@ def handle_client(client_socket):
                 to_send = "Your list id is '" + user_list[username] + "'."
                 client_socket.send(to_send.encode())
 
-                #print_user_list()
-
-
+                
         listed = True
         
     
@@ -136,23 +131,25 @@ def handle_client(client_socket):
 
     while True:
         client_socket.send("Show menu.\n".encode())
-        key = client_socket.recv(1024).decode().strip()
 
-        if not key:
-            print("Client disconnected unexpectedly.")
-            break
 
-        elif key == "4": # later implement CRDTs here
-            # for now, only substitute the server client's shopping list with the union of his personal list and the server list
+        # for now, only substitute the server client's shopping list with the union of his personal list and the server list
+        # Later implement CRDTs here
 
-            encoded_client_items = client_socket.recv(1024).decode().strip()
+        encoded_client_items = client_socket.recv(1024).decode().strip()
+        
+        if "noContent" in encoded_client_items:
+            #print("NO NEED TO UPDATE")
+            client_socket.send("No sync".encode())
+        
+        else: # syncronize lists
 
             # Split the received data using '\n' as the separator and store it in a list
             client_items_not_treated = encoded_client_items.split('\n')
             # Add '\n' to the end of each element in the list
             client_items = [item + '\n' for item in client_items_not_treated]
+            print(client_items)
                 
-
             server_items = []
             try:
                 with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
@@ -161,7 +158,6 @@ def handle_client(client_socket):
             except FileNotFoundError:
                 pass
 
-            
             # if server list is empty 
             if is_file_empty(db_dir + "/server_data/shopping_lists/" + list_id + ".txt") == True:
 
@@ -206,6 +202,7 @@ def handle_client(client_socket):
 
             # send new items and message output to client
             client_socket.send(str_to_send.encode())
+
 
     client_socket.close()
 

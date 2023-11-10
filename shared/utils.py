@@ -95,20 +95,25 @@ def register_user(username, password):
     return "Registration successful. You can now log in."
 
 
-def print_user_list():
+def print_user_list(username):
+    is_file_empty = True
+    items = []
+    items.append("\nYour list content:")
     try:
-        user_list = {}
-        with open(db_dir + '/server_data/user_listsIDs.txt', 'r') as file:
-
+        with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
             for line in file:
-                username, listID = line.strip().split(':')
-                user_list[username] = listID
+                if is_file_empty:
+                    is_file_empty = False
+                name, quantity, acquired = line.strip().split(':')
+                string = "- [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                items.append(string)
     except FileNotFoundError:
         pass
 
-    print("\n> User:ListID contents:")
-    for username, list_id in user_list.items():
-            print(f"{username}:{list_id}")
+    if is_file_empty:
+        print("\nYour shopping list is empty. Try to add some items to your list.\n")
+    else:  
+        print("\n".join(items))
 
 
 def extract_list_id(message):
@@ -141,3 +146,41 @@ def extract_username(message):
     else:
         print("Message format not recognized.")
     return None
+
+
+"""
+def server_sync():
+    client_items = []
+    items_str = ""
+    try:
+        with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+            for line in file:
+                items_str += line
+    except FileNotFoundError:
+        pass
+
+    # Send client list items to server
+    client_socket.send(items_str.encode())
+
+    # Receive new items list and update client .txt
+    encoded_list_plus_message = client_socket.recv(1024).decode().strip()
+
+    # Split the received data using '\n' as the separator and store it in a list
+    list_plus_message = encoded_list_plus_message.split('\n')
+
+    # separate items from syncronization output
+    sync_output = list_plus_message.pop()
+
+    # Add '\n' to the end of each element in the list
+    items = [item + '\n' for item in list_plus_message]
+
+    # update client .txt
+    try:
+        with open(db_dir + "/client_data/clients_lists/" + username + '.txt', 'w') as file:
+            for line in items:
+                file.write(line)
+    except FileNotFoundError:
+        pass
+
+    print(sync_output)
+"""

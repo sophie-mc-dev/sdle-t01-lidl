@@ -103,87 +103,20 @@ while True:
     message = client_socket.recv(1024).decode()
 
     if "Show menu" in message:
-        print("\nChoose one option:")
-        print(" 1 - Check your list")
-        print(" 2 - Add item")
-        print(" 3 - Delete item")
-        print(" 4 - Server syncronization")
-        print(" 0 - Exit")
-            
-        key = input("Option: ")
-        client_socket.send(key.encode()) # only for key 4
 
-        if key == "1": 
-            is_file_empty = True
-            items = []
-            items.append("\nYour list content:")
-            try:
-                with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
-                    for line in file:
-                        print(line)
-                        if is_file_empty:
-                            is_file_empty = False
-                        name, quantity, acquired = line.strip().split(':')
-                        string = "- [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
-                        items.append(string)
-            except FileNotFoundError:
-                pass
-
-            if is_file_empty:
-                print("\nYour shopping list is empty. Try to add some items to your list.\n")
-            else:  
-                print("\n".join(items))
+        # antes de mostrar a lista, dar pull da do servidor
         
-        elif key == "2": 
-            item_name = input("> Name of the item: ")
-            item_quant = input("> Quantity: ")
+        # ---------- server sync: -----------
+        client_items = []
+        items_str = ""
+        try:
+            with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+                for line in file:
+                    items_str += line
+        except FileNotFoundError:
+            pass
 
-            try:
-                item_quant = int(item_quant)
-                add_item_to_list_file(client_username, item_name, item_quant)
-            except ValueError:
-                print("Quantity must be an integer.")
-    
-        elif key == "3": 
-            is_file_empty = True
-            to_print = "\nChoose an item to delete: \n"
-            items = []
-            try:
-                with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
-                    idx = 1
-                    for line in file:
-                        if is_file_empty:
-                            is_file_empty = False
-                        name, quantity, acquired = line.strip().split(':')
-                        string = str(idx) + " - [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
-                        items.append(string)
-                        idx += 1
-            except FileNotFoundError:
-                pass
-
-            if is_file_empty:
-                print("\nYou have no items to delete.\n")
-            else:  
-                to_print += "\n".join(items)
-                print(to_print)
-
-                item_number = input("> Item number: ")
-
-                try:
-                    item_number = int(item_number)
-                    print(delete_item_from_list_file(client_username, item_number-1))
-                except ValueError:
-                    print("Item number must be an integer.")
-
-        elif key == "4": 
-            client_items = []
-            items_str = ""
-            try:
-                with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
-                    for line in file:
-                        items_str += line
-            except FileNotFoundError:
-                pass
+        if items_str != "":
 
             # Send client list items to server
             client_socket.send(items_str.encode())
@@ -209,6 +142,79 @@ while True:
                 pass
 
             print(sync_output)
+
+        else:
+            client_socket.send("noContent".encode())
+            print("There's no need to syncronize with server.\n")
+
+
+        #----------------------------------
+
+        # Show user list content
+        print_user_list(username)
+
+        print("\nChoose one option:")
+        print(" 1 - Modify Shopping List")
+        print(" 0 - Exit")
+            
+        key = input("Option: ")
+        #client_socket.send(key.encode()) # only for key 4
+            
+
+        if key == "1":
+            print("\nChoose one option:")
+            print(" 1 - Add item")
+            print(" 2 - Delete item")
+            print(" 0 - Exit")
+
+            key = input("Option: ")
+            #client_socket.send(key.encode())
+
+            if key == "1": 
+                item_name = input("> Name of the item: ")
+                item_quant = input("> Quantity: ")
+
+                try:
+                    item_quant = int(item_quant)
+                    add_item_to_list_file(client_username, item_name, item_quant)
+                except ValueError:
+                    print("Quantity must be an integer.")
+        
+            elif key == "2": 
+                is_file_empty = True
+                to_print = "\nChoose an item to delete: \n"
+                items = []
+                try:
+                    with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+                        idx = 1
+                        for line in file:
+                            if is_file_empty:
+                                is_file_empty = False
+                            name, quantity, acquired = line.strip().split(':')
+                            string = str(idx) + " - [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                            items.append(string)
+                            idx += 1
+                except FileNotFoundError:
+                    pass
+
+                if is_file_empty:
+                    print("\nYou have no items to delete.\n")
+                else:  
+                    to_print += "\n".join(items)
+                    print(to_print)
+
+                    item_number = input("> Item number: ")
+
+                    try:
+                        item_number = int(item_number)
+                        print(delete_item_from_list_file(client_username, item_number-1))
+                    except ValueError:
+                        print("Item number must be an integer.")
+
+            elif key == "0":
+                print("End of connection.\n")
+                break
+
 
         elif key == "0":
             print("End of connection.\n")
