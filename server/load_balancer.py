@@ -1,27 +1,28 @@
 import heapq
+import threading
 
 class DynamicWeightedRoundRobinLoadBalancer:
     def __init__(self):
-        self.servers = []
-        self.heap = []
+        self.servers = []  # Maintain a list of servers for reference
+        self.server_index = 0
+        self.lock = threading.Lock()  # Add a lock for thread safety
 
     def add_server(self, server):
-        self.servers.append(server)  # Add server to the list
-        heapq.heappush(self.heap, (0, server))  # (load, server)
+        with self.lock:
+            self.servers.append(server)  # Add server to the list
 
     def remove_server(self, server):
-        self.servers.remove(server)
-        self.heap = [(load, s) for load, s in self.heap if s != server]
-        heapq.heapify(self.heap)
+        with self.lock:
+            self.servers.remove(server)  # Remove server from the list
 
     def get_next_server(self):
-        if not self.servers:
-            raise ValueError("No servers available")
+        with self.lock:
+            if not self.servers:
+                raise ValueError("No servers available")
 
-        _, server = heapq.heappop(self.heap)
-        load = self._get_server_load(server)
-        heapq.heappush(self.heap, (load + 1, server))  # Increase load for the next cycle
-        return server
+            server = self.servers[self.server_index]
+            self.server_index = (self.server_index + 1) % len(self.servers)
+            return server
 
     def _get_server_load(self, server):
         # Simulate getting the current load for a server (replace with your logic)
