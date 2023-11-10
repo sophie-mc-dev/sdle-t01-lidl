@@ -3,12 +3,19 @@ import threading
 import signal
 import sys
 from os.path import dirname, abspath
+from load_balancer import DynamicWeightedRoundRobinLoadBalancer
 
 parent_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(parent_dir)
 
 from shared.operations import *
 from shared.utils import *
+
+load_balancer = DynamicWeightedRoundRobinLoadBalancer()
+
+# Add servers to the load balancer
+load_balancer.add_server("Server1")
+load_balancer.add_server("Server2")
 
 
 
@@ -25,6 +32,8 @@ server_socket.bind((host, port))
 # Listen for incoming connections
 server_socket.listen(5)  # 5 connections for now
 print("\nServer is listening...")
+
+
 
 
 
@@ -77,6 +86,9 @@ def handle_client(client_socket):
     listed = False
 
     while not listed:
+
+        
+        client_socket.send(f"You have been assigned to server: {target_server}\n".encode()) #já tiro
 
         if len(user_list) == 0:
             to_send = "No active shooping lists.\n"
@@ -222,7 +234,12 @@ signal.signal(signal.SIGINT, signal_handler)
 while True:
     client_socket, client_address = server_socket.accept()
 
-    # Create a new thread to handle the client
-    client_handler = threading.Thread(target=handle_client, args=(client_socket,))
-    client_handler.start()
+    try:
+        target_server = load_balancer.get_next_server()
 
+        # Pass the client socket to the chosen server for handling
+        handle_client_thread = threading.Thread(target=handle_client, args=(client_socket,))
+        handle_client_thread.start()
+
+    except ValueError as e:
+        print("No servers available. Handle this case appropriately.")

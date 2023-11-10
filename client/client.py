@@ -46,6 +46,7 @@ listed = False
 
 while not listed:
     message = client_socket.recv(1024).decode()
+    print(message) #já tiro
 
     if "No active shooping lists." in message:
         print("There are no active shooping lists. Let's create one for you.\n")
