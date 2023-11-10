@@ -9,6 +9,7 @@ sys.path.append(parent_dir)
 
 from shared.operations import *
 from shared.utils import *
+from shared.CRDT import *
 
 
 
