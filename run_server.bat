@@ -1,3 +1,3 @@
 @echo off
-REM cd /d C:\Users\barba\OneDrive\Ambiente de Trabalho\SDLE_proj
+make clean
 python -m server.server
