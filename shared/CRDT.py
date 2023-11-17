@@ -1,109 +1,100 @@
-import time
-from threading import RLock
+import uuid
 
-
-class LWW:
+class AWORMap:
     def __init__(self):
-        self.add_set = {}
-        self.remove_set = {}
-        self.add_lock = RLock()
-        self.remove_lock = RLock()
+        self.shopping_list_id = "1"
+        self.shopping_map = {}
 
-    def add(self, item_name, quantity):
-        """
-        This method adds the element into the add_set dictionary
-        of the Lww, where key is the element and value is the current unix timestamp
-        :param element: Element to be add into LWW
-        :return: None
-        """
+    def add_item(self, key, item):
+        self.shopping_map[key] = item
 
-        with self.add_lock:
-            current_timestamp = time.time()
-            acquired = False
-            current_value = (quantity, acquired, current_timestamp)
-            if self.add_set.get(item_name, (0, False, 0))[2] < current_timestamp:
-                self.add_set[item_name] = current_value
+    def remove_item(self, key):
+        if key in self.shopping_map:
+            del self.shopping_map[key]
 
-    def lookup(self, element):
-        """
-        This method check whether a given element is in LWW
-        :param element: Element whose presence is the checked in LWW
-        :return: Boolean
-        """
-
-        with self.add_lock, self.remove_lock:
-            if element not in self.add_set:
-                # Element not in add_set
-                return False
-
-            if element not in self.remove_set:
-                # Element in add_set and not in remove_set
-                return True
-
-            if self.remove_set[element] < self.add_set[element]:
-                # Element in both add_set and remove_set, but addition is after removal
-                return True
-
-            # Element in both add_set and remove_set, but addition is before removal
-            return False
-
-    def remove(self, element):
-        """
-        This method removes the element from the LWW
-        :param element: Element to be removed
-        :return: None
-        """
-
-        with self.remove_lock:
-            if self.remove_set.get(element, 0) < time.time():
-                self.remove_set[element] = time.time()
-       
-
-    def compare(self, other):
-        """
-        This method checks whether the LWW is subset of the given LWW
-        :param other: LWW object to be compared with
-        :return: Boolean
-        """
-
-        with self.add_lock, self.remove_lock, other.add_lock, other.remove_lock:
-            # Check add_set is subset of other.add_set
-            add_subset = set(self.add_set.keys()).issubset(other.add_set.keys())
-
-            # Check remove_set is subset of other.remove_set
-            remove_subset = set(self.remove_set.keys()).issubset(
-                other.remove_set.keys()
-            )
-
-        return add_subset and remove_subset
-
-    def merge(self, other):
-        """
-        This method merge the LWW with the given LWW and returns a new LWW
-        without affecting the original LWW
-        :param other:
-        :return: Lww
-        """
-
-        lww = LWW()
-
-        with self.add_lock, self.remove_lock, other.add_lock, other.remove_lock:
-            # Merge add_set
-            lww.add_set = {**self.add_set, **other.add_set}
-
-            # Merge remove_set
-            lww.remove_set = {**self.remove_set, **other.remove_set}
-
-            # Update lww with latest timestamp in add_set
-            for element, timestamp in self.add_set.items():
-                lww.add_set[element] = max(lww.add_set[element], timestamp)
-
-            # Update lww with latest timestamp in remove_set
-            for element, timestamp in self.remove_set.items():
-                lww.remove_set[element] = max(lww.remove_set[element], timestamp)
-
-        return lww
+    def get_shopping_list(self, shopping_list_id=None):
+        if shopping_list_id is None or shopping_list_id != self.shopping_list_id:
+            print("Invalid Shopping List ID or no ID provided.")
+            return None
+        
+        for key, item in self.shopping_map.items():
+            print(f"Item ID: {key}, Item: {item}")
+        return self.shopping_map
 
 
-class PNCounter:
-    """"""
+
+
+# Example usage:
+
+# Instance of shopping list
+shopping_list = AWORMap()
+
+# Define item
+item_id1 = str(uuid.uuid4())
+item_id2 = str(uuid.uuid4())
+
+item1 = {
+    "name": "Milk",
+    "quantity": int("2"),
+    "acquired": False,
+    "timestamp": 1  # Add timestamp for versioning/CRDT purposes
+}
+item2 = {
+    "name": "Apple",
+    "quantity": int("5"),
+    "acquired": False,
+    "timestamp": 2  
+}
+
+# Add items created to the list
+shopping_list.add_item(item_id1, item1)
+shopping_list.add_item(item_id2, item2)
+
+# Get shopping list
+user_input_id = input("Enter Shopping List ID: ")
+if user_input_id == shopping_list.shopping_list_id:
+    while True:
+        print("\nMenu:")
+        print("1. Add item")
+        print("2. Remove item")
+        print("3. Exit")
+        
+        choice = input("Enter your choice (1/2/3): ")
+
+        if choice == "1":
+            # Add item
+            item_id = str(uuid.uuid4())  # Generate a new ID for the item
+            item_name = input("Enter item name: ")
+            item_quantity = int(input("Enter item quantity: "))
+
+            new_item = {
+                "name": item_name,
+                "quantity": item_quantity,
+                "acquired": False,
+                "timestamp": 3  # Set timestamp for new item
+            }
+            shopping_list.add_item(item_id, new_item)
+            print("Item added successfully.")
+            shopping_list.get_shopping_list(user_input_id)  # Display updated list
+            
+        elif choice == "2":
+            # Remove item
+            item_to_remove = input("Enter ID of the item to remove: ")
+            shopping_list.remove_item(item_to_remove)
+            print("Item removed successfully.")
+            shopping_list.get_shopping_list(user_input_id)  # Display updated list
+            
+        elif choice == "3":
+            # Exit
+            break
+        
+        else:
+            print("Invalid choice. Please enter a valid option.")
+else:
+    print("Invalid Shopping List ID.")
+
+
+
+# counter para quantity, acquired
+# update quantity function
+# update acquired status function
