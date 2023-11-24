@@ -106,8 +106,9 @@ while True:
 
         # antes de mostrar a lista, dar pull da do servidor
         
-        # ---------- server sync: -----------
-        client_items = []
+        # ---------- server sync: ----------- PUSH
+        
+        # read client's list
         items_str = ""
         try:
             with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
@@ -121,7 +122,7 @@ while True:
             # Send client list items to server
             client_socket.send(items_str.encode())
 
-            # Receive new items list and update client .txt
+            # Receive new items list and update client.txt
             encoded_list_plus_message = client_socket.recv(1024).decode().strip()
 
             # Split the received data using '\n' as the separator and store it in a list
@@ -133,7 +134,7 @@ while True:
             # Add '\n' to the end of each element in the list
             items = [item + '\n' for item in list_plus_message]
 
-            # update client .txt
+            # update client.txt
             try:
                 with open(db_dir + "/client_data/clients_lists/" + username + '.txt', 'w') as file:
                     for line in items:
@@ -164,7 +165,7 @@ while True:
         if key == "1":
             print("\nChoose one option:")
             print(" 1 - Add item")
-            print(" 2 - Delete item")
+            #print(" 2 - Delete item") => commented cause it's not working well yet
             print(" 0 - Exit")
 
             key = input("Option: ")
@@ -214,6 +215,10 @@ while True:
             elif key == "0":
                 print("End of connection.\n")
                 break
+
+            # dar push para o servidor!
+            # ...
+
 
 
         elif key == "0":

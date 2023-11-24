@@ -170,21 +170,9 @@ def handle_client(client_socket):
                     except FileNotFoundError:
                         pass
 
-                    # client shopping list was not modified
-                    client_items.append("Syncronization done with success. Your list does not change.\n")
-
-                else: 
-                    # client shopping list has no items
-                    client_items.append("Syncronization attempt, but there's no content to update.\n".encode()) 
-
             elif client_items != server_items:
                 items = list(set(client_items + server_items))
-
-                # write to both lists
-                if len(client_items) < len(server_items): 
-                    client_items.append("Syncronization done with success. Your list have changed.\n")
-                else:
-                    client_items.append("Syncronization done with success. Server list have changed.\n")
+                client_items = items
 
                 try:
                     with open(db_dir + "/server_data/shopping_lists/" + list_id + '.txt', 'w') as file:
@@ -193,8 +181,8 @@ def handle_client(client_socket):
                 except FileNotFoundError:
                     pass
 
-            else: # client_items == server_items:
-                client_items.append("The server is already syncronized with your list.\n")
+            
+            client_items.append("Syncronization done with success.\n")
 
             str_to_send = ""
             for elem in client_items:

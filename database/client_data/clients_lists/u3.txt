@@ -1,4 +1,0 @@
-apple:3:False
-banana:10:False
-orange:9:False
-salt:1:False
