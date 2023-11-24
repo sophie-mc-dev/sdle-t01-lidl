@@ -96,7 +96,6 @@ while not listed:
     
 #print("> You are associated with shopping list '", client_list, "'.")
 
-
 # Continue with list management or other operations
 while True:
     
@@ -106,7 +105,7 @@ while True:
 
         # antes de mostrar a lista, dar pull da do servidor
         
-        # ---------- server sync: ----------- PUSH
+        # ---------- server sync: -----------
         
         # read client's list
         items_str = ""
@@ -165,7 +164,7 @@ while True:
         if key == "1":
             print("\nChoose one option:")
             print(" 1 - Add item")
-            #print(" 2 - Delete item") => commented cause it's not working well yet
+            print(" 2 - Delete item")
             print(" 0 - Exit")
 
             key = input("Option: ")
@@ -189,8 +188,7 @@ while True:
                     with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
                         idx = 1
                         for line in file:
-                            if is_file_empty:
-                                is_file_empty = False
+                            is_file_empty = False
                             name, quantity, acquired = line.strip().split(':')
                             string = str(idx) + " - [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
                             items.append(string)

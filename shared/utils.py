@@ -98,7 +98,7 @@ def register_user(username, password):
 def print_user_list(username):
     is_file_empty = True
     items = []
-    items.append("\nYour list content:")
+    items.append("\nYour list content - after server pull:")
     try:
         with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
             for line in file:

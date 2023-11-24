@@ -68,7 +68,7 @@ def add_item_to_list_file(username, name, quantity):
     item_exists = False
     for item in client_list[username].items:
         if item.name.lower() == name.lower():
-            item.quantity += quantity
+            item.quantity = str(int(item.quantity) + int(quantity))
             item_exists = True
             break
     # 2 - If the item doesn't exist, add it to the list
@@ -77,9 +77,12 @@ def add_item_to_list_file(username, name, quantity):
 
     # update file
     file_content = []
+    print("\n=> CLIENT FILE CONTENT:")
     for item in client_list[username].items:
         new_item_line = item.name + ":" + str(item.quantity) + ":" + str(False) + "\n"
         file_content.append(new_item_line)
+        print(new_item_line)
+
 
     with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'w') as file:
         for line in file_content:
@@ -138,9 +141,12 @@ def delete_item_from_list_file(username, item_idx):
         client_list[username].add_item(item_name, item_quantity)
 
     # update file
+    print("\n=> CLIENT FILE CONTENT:")
     with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'w') as file:
         for line in file_content:
             file.write(line)
+            print(line)
+
 
     return "Item deleted with success.\n"
 
