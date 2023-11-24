@@ -132,7 +132,7 @@ def extract_list_id(message):
     return None
 
 
-def extract_username(message):
+"""def extract_username(message):
     start_index = message.find("Your username is '")
 
     if start_index != -1:
@@ -146,7 +146,7 @@ def extract_username(message):
     else:
         print("Message format not recognized.")
     return None
-
+"""
 
 """
 def server_sync():
