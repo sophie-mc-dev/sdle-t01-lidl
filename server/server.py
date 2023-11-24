@@ -35,41 +35,30 @@ def handle_client(client_socket):
     authenticated = False  # Track authentication status
 
     while not authenticated:
-        client_socket.send("\n1 - Log in\n2 - Register\nYour choice:".encode())
-        choice = client_socket.recv(1024).decode().strip()
 
-        if choice == "1":
-            # Authentication loop
-            client_socket.send("Username:".encode())
-            username = client_socket.recv(1024).decode().strip()
+        # message = authentication||registration:username:password
+        encoded_message = client_socket.recv(1024).decode().strip()
 
-            client_socket.send("Password:".encode())
-            password = client_socket.recv(1024).decode().strip()
+        # Split the received data using '\n' as the separator and store it in a list
+        message = encoded_message.split(':')
 
+        choice, username, password = message
+
+        if choice == "authentication":
             if username in user_credentials and user_credentials[username] == password:
                 authenticated = True
-                to_send = "Authentication successful. You can now access your list.\nYour username is '" + username + "'"
+                to_send = "Authentication successful."
                 client_socket.send(to_send.encode())
             else:
                 client_socket.send("Authentication failed. Please try again.".encode())
         
-        elif choice == "2":
-            client_socket.send("Choose a Username:".encode())
-            new_username = client_socket.recv(1024).decode().strip()
-
-            client_socket.send("Choose a Password:".encode())
-            new_password = client_socket.recv(1024).decode().strip()
-
-            registration_result = register_user(new_username, new_password)
-            to_send = registration_result + "\nYour username is '" + new_username + "'"
-            client_socket.send(to_send.encode())
+        elif choice == "registration":
+            registration_result = register_user(username, password)
+            print(registration_result)
+            client_socket.send(registration_result.encode())
             if ("Registration successful" in registration_result):
                 authenticated = True
-                username = new_username
                 user_list[username] = None 
-        else:
-            client_socket.send("Invalid choice. Please choose 1 or 2.".encode())
-
 
 
     # Once authenticated, proceed with list management

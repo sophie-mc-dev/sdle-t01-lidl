@@ -27,18 +27,32 @@ authenticated = False
 
 while not authenticated:
     # Authentication loop
-    message = client_socket.recv(1024).decode()
-    #print(message)
 
-    if "Authentication successful" in message or "Registration successful." in message:
+    print("\n1 - Log in\n2 - Register\nYour choice:")
+    option = input("option: ")
+    if option == '1':
+        username = input("> username: ")
+        password = input("> password: ")
+        to_send = "authentication" + ':' + username + ':' + password
+        client_socket.send(to_send.encode())
+
+        message = client_socket.recv(1024).decode()
         print(message)
-        username = extract_username(message)
-        if username is not None:
+        if 'Authentication successful' in message:
             client_username = username
-        authenticated = True
-    else:
-        choice = input(message)
-        client_socket.send(choice.encode())
+            authenticated = True
+
+    elif option == '2':
+        username = input("> username: ")
+        password = input("> password: ")
+        to_send = "registration" + ':' + username + ':' + password
+        client_socket.send(to_send.encode())
+
+        message = client_socket.recv(1024).decode()
+        print(message)
+        if 'Registration successful' in message:
+            client_username = username
+            authenticated = True
 
 
 

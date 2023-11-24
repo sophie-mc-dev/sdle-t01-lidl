@@ -92,7 +92,7 @@ def register_user(username, password):
         return "Username already exists. Please choose a different one."
     user_credentials[username] = password
     save_credentials_to_file(user_credentials)
-    return "Registration successful. You can now log in."
+    return "Registration successful. You are now logged in."
 
 
 def print_user_list(username):
