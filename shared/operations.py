@@ -23,15 +23,25 @@ def create_personal_client_list(username, list_id):
         except FileNotFoundError:
             pass
 
+
 def save_shopping_list_to_file(credentials):
     with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file: # Open in "write" mode ('w')
-        for username, list_id in credentials.items():
-            file.write(f"{username}:{list_id}\n")
+        for username, lists_IDs in credentials.items():
+            file.write(f"{username}:{lists_IDs}\n")
+
 
 def register_shopping_list(username, list_id):
-    user_list[username] = list_id
+    try:
+        all_user_lists_str = user_list[username]
+        all_user_lists_str += ',' + list_id
+        user_list[username] = all_user_lists_str
+    except:
+        user_list[username] = list_id        
+
     save_shopping_list_to_file(user_list)
+
     return "List Registration successful."
+
 
 def create_new_shopping_list(username):
     list_id = str(uuid.uuid4())

@@ -74,7 +74,6 @@ def handle_client(client_socket):
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
             
-
         else:
             client_socket.send("There already are active shooping lists".encode())
             # client will choose a menu option
@@ -92,9 +91,14 @@ def handle_client(client_socket):
 
                 # get all the lists available
                 available_lists = []
-                for user_name, list_id in user_list.items():
-                    if list_id != None:
-                        available_lists.append(list_id)
+                for user_name, lists_IDs in user_list.items():
+                    try:
+                        lists_IDs = lists_IDs.strip().split(',')
+                        for listID in lists_IDs:
+                            available_lists.append(listID)
+                    except:
+                        available_lists.append(lists_IDs)
+
                 available_lists = list(set(available_lists))
 
                 idx = 1
@@ -122,13 +126,15 @@ def handle_client(client_socket):
         client_socket.send("Show menu.\n".encode())
 
 
+
         # for now, only substitute the server client's shopping list with the union of his personal list and the server list
         # Later implement CRDTs here
+
+
 
         encoded_client_items = client_socket.recv(1024).decode().strip()
         
         if "noContent" in encoded_client_items:
-            #print("NO NEED TO UPDATE")
             client_socket.send("No sync".encode())
         
         else: # syncronize lists
