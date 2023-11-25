@@ -3,33 +3,9 @@ from .models import *
 from .utils import *
 
 
-# ------------------- Functions to Manage Shopping Lists -------------------
+# ------------------- Functions to Manage Shopping Lists and it's items -------------------
 
-# IMP -> seems like 'create_personal_client_list()' is a function only called 
-# by the client, but access data from server - TODO: fix this
-
-# creates local clients list
-# function only called by the client
-def create_personal_client_list(username, list_id):
-    # check if list_id already has some content
-    file_path = db_dir + "/server_data/shopping_lists/" + list_id + ".txt"
-    if is_file_empty(file_path) == True:
-        # create an empty file
-        create_file_from_url(username, db_dir + "/client_data/clients_lists", [])
-    else:
-        # get content from list and write it in new personal client list
-        file_content = []
-        try:
-            with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
-                for line in file:
-                    file_content.append(line)
-            create_file_from_url(username, db_dir + "/client_data/clients_lists", file_content)
-            
-        except FileNotFoundError:
-            pass
-
-
-# creates a new shopping list and associates it with the client
+# creates a new empty shopping list and associates it with the client
 # function only called by the server
 def create_new_shopping_list(username):
     list_id = str(uuid.uuid4())
@@ -42,6 +18,7 @@ def create_new_shopping_list(username):
     except:
         user_list[username] = list_id        
 
+
     # save clients lists
     with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
         for username, lists_IDs in user_list.items():
@@ -53,9 +30,6 @@ def create_new_shopping_list(username):
     return list_id
 
     
-
-# ------------------- Functions to Manage Shopping Lists Items -------------------
-
 # adds an item to a shopping list given its list_id, name, and quantity
 # function only called by the client
 def add_item_to_list_file(username, name, quantity):

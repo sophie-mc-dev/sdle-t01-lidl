@@ -67,10 +67,11 @@ while not listed:
         list_id = extract_list_id(message)
         if list_id is not None:
             client_list = list_id
-        
-        # create a personal shopping list (copy from the oriinal),
+
+        # create a personal shopping list (copy from the original),
         # this list is not shared with anybody
-        create_personal_client_list(client_username, client_list)
+        create_file_from_url(username, db_dir + "/client_data/clients_lists", [])
+
         print(f"Your list id is '{client_list}'.")
 
     elif "There already are active shooping lists" in message:
@@ -86,9 +87,12 @@ while not listed:
             list_id = extract_list_id(message)
             if list_id is not None:
                 client_list = list_id
-            create_personal_client_list(client_username, client_list)
-            print(f"You are associated to list id '{client_list}'.")
 
+            # create a personal shopping list (copy from the original),
+            # this list is not shared with anybody
+            create_file_from_url(username, db_dir + "/client_data/clients_lists", [])
+
+            print(f"You are associated to list id '{client_list}'.")
 
         elif "Choose one list ID" in message: # option 2
             print(message)
@@ -102,13 +106,23 @@ while not listed:
             if list_id is not None:
                 client_list = list_id
 
-            create_personal_client_list(client_username, client_list)
+            client_socket.send("Has content?".encode())
+            # create a personal shopping list (copy from the original),
+            # this list is not shared with anybody
+            message = client_socket.recv(1024).decode()
+            if "empty_list" in message:
+                create_file_from_url(username, db_dir + "/client_data/clients_lists", [])
+            else:
+                file_content = message.strip().split(',')
+                print("file content:")
+                print(file_content)
+                create_file_from_url(username, db_dir + "/client_data/clients_lists", file_content)
+            
             print(f"You are associated to list id '{client_list}'.")
-
 
     listed = True
     
-#print("> You are associated with shopping list '", client_list, "'.")
+
 
 # Continue with list management or other operations
 while True:

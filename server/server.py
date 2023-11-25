@@ -110,16 +110,32 @@ def handle_client(client_socket):
                 option = client_socket.recv(1024).decode().strip()
 
                 user_list[username] = available_lists[int(option) - 1]
-                save_shopping_list_to_file(user_list)
+                with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
+                    for username, list_id in user_list.items():
+                        file.write(f"{username}:{list_id}\n")
 
                 to_send = "Your list id is '" + user_list[username] + "'."
                 client_socket.send(to_send.encode())
 
-                
+                message = client_socket.recv(1024).decode() # needed just to messages logic work
+                if is_file_empty(db_dir + "/server_data/shopping_lists/" + list_id + ".txt"):
+                    client_socket.send("empty_list".encode())
+                else:
+                    # get content from list and send it to client
+                    file_content = []
+                    try:
+                        with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
+                            for line in file:
+                                file_content.append(line)
+                        client_socket.send(",".join(file_content).encode())                    
+                        
+                    except FileNotFoundError:
+                        pass
+
         listed = True
         
-    
     print("User '", username, "' is associated with shopping list '", user_list[username], "'.")
+
 
 
     while True:
