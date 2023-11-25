@@ -3,8 +3,11 @@ from .models import *
 from .utils import *
 
 
-# Functions to Manage Shopping Lists:
+# ------------------- Functions to Manage Shopping Lists -------------------
 
+# IMP -> seems like this is a function only called by the client, but access data from server - TODO: fix this
+# creates local clients list
+# function only called by the client
 def create_personal_client_list(username, list_id):
     # check if list_id already has some content
     file_path = db_dir + "/server_data/shopping_lists/" + list_id + ".txt"
@@ -24,12 +27,7 @@ def create_personal_client_list(username, list_id):
             pass
 
 
-def save_shopping_list_to_file(credentials):
-    with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file: # Open in "write" mode ('w')
-        for username, lists_IDs in credentials.items():
-            file.write(f"{username}:{lists_IDs}\n")
-
-
+# auxiliar function of create_new_shopping_list()
 def register_shopping_list(username, list_id):
     try:
         all_user_lists_str = user_list[username]
@@ -38,23 +36,30 @@ def register_shopping_list(username, list_id):
     except:
         user_list[username] = list_id        
 
-    save_shopping_list_to_file(user_list)
+    # save clients lists
+    with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
+        for username, lists_IDs in user_list.items():
+            file.write(f"{username}:{lists_IDs}\n")
 
     return "List Registration successful."
 
-
+# creates a new shopping list and associates it with the client
+# function only called by the server
 def create_new_shopping_list(username):
     list_id = str(uuid.uuid4())
     register_shopping_list(username, list_id)
+
     create_file_from_url(list_id, db_dir + "/server_data/shopping_lists", [])
     client_list[list_id] = ShoppingList(list_id)
+    
     return list_id
 
     
 
-# Functions to Manage Shopping Lists Items:
+# ------------------- Functions to Manage Shopping Lists Items -------------------
 
 #  adds an item to a shopping list given its list_id, name, and quantity
+# function only called by the client
 def add_item_to_list_file(username, name, quantity):
 
     # ler o conteudo do file
@@ -93,13 +98,13 @@ def add_item_to_list_file(username, name, quantity):
         file_content.append(new_item_line)
         print(new_item_line)
 
-
     with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'w') as file:
         for line in file_content:
             file.write(line)
 
 
 # delete_item_from_list() deletes an item from a shopping list based on its item_id
+# function only called by the client
 def delete_item_from_list_file(username, item_idx):
     # ler o conteudo do file
     file_content = []
@@ -129,6 +134,7 @@ def delete_item_from_list_file(username, item_idx):
     
 
 # marks an item as acquired based on its item_name
+# function only called by the client
 def acquire_item_from_list_file(username, item_number):
 
     item_number = int(item_number)
@@ -138,7 +144,6 @@ def acquire_item_from_list_file(username, item_number):
     try:
         with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
             for line in file:
-                #item_name, quantity, acquired = line.strip().split(':')
                 file_content.append(line)      
     except FileNotFoundError:
         raise ValueError("List not found.")
