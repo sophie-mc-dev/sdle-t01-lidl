@@ -1,28 +1,63 @@
-# feup-sdle
+# FEUP - Large Scale Distributed Systems (SDLE)
 
-### Instructions to run the application: there are two ways to run the project. Please check them below.
+## Run application - Instructions
 
-## 1st way
+### 1st way - Manually execute the commands
 
-1.1 - run server in sdle_t01_lidl directory:
+Before running the application, you must:
 
-    python -m sdle_t01_lidl.server.server
+- delete all the files from shopping_lists and clients_lists
+- clean the content of user_listsIDs.txt found in the database folder
 
-1.2 - run client in sdle_t01_lidl directory:
+To do this, run the following command on the main project directory:
 
-    python -m sdle_t01_lidl.client.client
+```
+make clean
+```
 
-### **IMP!** 
-Before start running the application, you must <u>delete all the files from shopping_lists and clients_lists</u> as well as <u>clean the content of user_listsIDs.txt</u>. You can do that by running the following command on the project directory:
+<u>_NOTE_</u> - This was made to run on Windows prompt. If you're not using Windows, you **must delete this files by hand**.
 
-    make clean
+### Attention!
+If using version 3 of Python, use the `python3` command instead.
 
-<u>*NOTE*</u> - This was made to run on Windows prompt. If you're not using Windows, you **must delete this files by hand**.
+The server command/script should always be executed first.
+
+### Commands:
+Run server:
+
+    python -m server.server
+
+Run client:
+
+    python -m client.client
 
 
-## 2nd way  =>*(todo - rewrite this 4 Mac too!)*
+### 2nd way - Run scripts individually
 
-If windows is your operation system, run the following commands from sdle_t01_lidl directory:
+- ### For Windows
 
-    ./run_server.bat
-    ./run_client.bat
+Run server:
+
+```
+./run_server.bat
+```
+
+Run client:
+
+```
+./run_client.bat
+```
+
+- ### For MacOS
+
+Run server:
+
+```
+./run_server.sh
+```
+
+Run client:
+
+```
+./run_client.sh
+```
