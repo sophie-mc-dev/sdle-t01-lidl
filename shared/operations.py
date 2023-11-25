@@ -5,7 +5,9 @@ from .utils import *
 
 # ------------------- Functions to Manage Shopping Lists -------------------
 
-# IMP -> seems like this is a function only called by the client, but access data from server - TODO: fix this
+# IMP -> seems like 'create_personal_client_list()' is a function only called 
+# by the client, but access data from server - TODO: fix this
+
 # creates local clients list
 # function only called by the client
 def create_personal_client_list(username, list_id):
@@ -27,8 +29,12 @@ def create_personal_client_list(username, list_id):
             pass
 
 
-# auxiliar function of create_new_shopping_list()
-def register_shopping_list(username, list_id):
+# creates a new shopping list and associates it with the client
+# function only called by the server
+def create_new_shopping_list(username):
+    list_id = str(uuid.uuid4())
+
+    # register shopping list
     try:
         all_user_lists_str = user_list[username]
         all_user_lists_str += ',' + list_id
@@ -41,14 +47,6 @@ def register_shopping_list(username, list_id):
         for username, lists_IDs in user_list.items():
             file.write(f"{username}:{lists_IDs}\n")
 
-    return "List Registration successful."
-
-# creates a new shopping list and associates it with the client
-# function only called by the server
-def create_new_shopping_list(username):
-    list_id = str(uuid.uuid4())
-    register_shopping_list(username, list_id)
-
     create_file_from_url(list_id, db_dir + "/server_data/shopping_lists", [])
     client_list[list_id] = ShoppingList(list_id)
     
@@ -58,7 +56,7 @@ def create_new_shopping_list(username):
 
 # ------------------- Functions to Manage Shopping Lists Items -------------------
 
-#  adds an item to a shopping list given its list_id, name, and quantity
+# adds an item to a shopping list given its list_id, name, and quantity
 # function only called by the client
 def add_item_to_list_file(username, name, quantity):
 
