@@ -61,7 +61,7 @@ def add_item_to_list_file(username, name, quantity):
     client_list[username] = ShoppingList(username) # limpamos a shopping list
     for file_line in file_content:
         item_name, item_quantity, acquired = file_line.strip().split(':')
-        client_list[username].add_item(item_name, item_quantity)
+        client_list[username].add_item(item_name, item_quantity, acquired)
 
     # adicionar o novo elemento:
     # 1 - Check if the item already exists in the list
@@ -73,7 +73,7 @@ def add_item_to_list_file(username, name, quantity):
             break
     # 2 - If the item doesn't exist, add it to the list
     if not item_exists:
-        client_list[username].add_item(name, quantity)
+        client_list[username].add_item(name, quantity, False)
 
     # update file
     file_content = []
@@ -89,37 +89,6 @@ def add_item_to_list_file(username, name, quantity):
             file.write(line)
 
 
-
-# ------------------------
-
-# creates a new shopping list and returns its unique list_id
-#def create_shopping_list():
-#    list_id = str(uuid.uuid4())
-#    local_lists[list_id] = ShoppingList(list_id)
-#    cloud_storage[list_id] = local_lists[list_id]
-#    return list_id
-
-#  adds an item to a shopping list given its list_id, name, and quantity
-#def add_item_to_list(list_id, name, quantity):
-#    if list_id not in local_lists:
-#        raise ValueError("List not found.")
-#
-#    # Check if the item already exists in the list
-#    item_exists = False
-#    for item in local_lists[list_id].items:
-#        if item.name.lower() == name.lower():
-#            item.quantity += quantity
-#            item_exists = True
-#            break
-#
-#    # If the item doesn't exist, add it to the list
-#    if not item_exists:
-#        local_lists[list_id].add_item(name, quantity)
-#
-#    # Update the cloud storage
-#    cloud_storage[list_id] = local_lists[list_id]
-
-
 # delete_item_from_list() deletes an item from a shopping list based on its item_id
 def delete_item_from_list_file(username, item_idx):
     # ler o conteudo do file
@@ -127,7 +96,6 @@ def delete_item_from_list_file(username, item_idx):
     try:
         with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
             for line in file:
-                #item_name, quantity, acquired = line.strip().split(':')
                 file_content.append(line)      
     except FileNotFoundError:
         raise ValueError("List not found.")
@@ -138,7 +106,7 @@ def delete_item_from_list_file(username, item_idx):
     client_list[username] = ShoppingList(username) # limpamos a shopping list
     for file_line in file_content:
         item_name, item_quantity, acquired = file_line.strip().split(':')
-        client_list[username].add_item(item_name, item_quantity)
+        client_list[username].add_item(item_name, item_quantity, acquired)
 
     # update file
     print("\n=> CLIENT FILE CONTENT:")
@@ -147,18 +115,40 @@ def delete_item_from_list_file(username, item_idx):
             file.write(line)
             print(line)
 
-
     return "Item deleted with success.\n"
-
-
-
     
 
-# marks an item as acquired based on its item_id
-def acquire_item(list_id, item_id):
-    if list_id not in local_lists:
-        raise ValueError("List not found.")
+# marks an item as acquired based on its item_name
+def acquire_item_from_list_file(username, item_number):
 
-    local_lists[list_id].acquire_item(item_id)
-    # Update the cloud storage
-    cloud_storage[list_id] = local_lists[list_id]
+    item_number = int(item_number)
+
+    # ler o conteudo do file
+    file_content = []
+    try:
+        with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+            for line in file:
+                #item_name, quantity, acquired = line.strip().split(':')
+                file_content.append(line)      
+    except FileNotFoundError:
+        raise ValueError("List not found.")
+    
+    # atualizar a list: preencher a shooping list com o conteudo do file 
+    client_list[username] = ShoppingList(username) # limpamos a shopping list
+
+    counter = 0
+    for file_line in file_content:
+        item_name, item_quantity, acquired = file_line.strip().split(':')
+        if counter == item_number:
+            client_list[username].add_item(item_name, item_quantity, str(True))
+        else:
+            client_list[username].add_item(item_name, item_quantity, acquired)
+        counter += 1
+
+    # update file
+    file_content = []
+    print("\n=> CLIENT FILE CONTENT:")
+    for item in client_list[username].items:
+        new_item_line = item.name + ":" + str(item.quantity) + ":" + str(item.acquired) + "\n"
+        file_content.append(new_item_line)
+        print(new_item_line)

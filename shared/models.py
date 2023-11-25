@@ -17,16 +17,9 @@ class ShoppingList: # represents a shopping list that contains multiple items
         self.list_id = list_id  # unique identifier for the shopping list
         self.items = []         # a list to store ShoppingListItem objects
 
-    def add_item(self, name, quantity):
-        item = ShoppingListItem(name, quantity)
+    def add_item(self, name, quantity, acquired):
+        item = ShoppingListItem(name, quantity, acquired)
         self.items.append(item)
 
     def delete_item(self, item_id):
         self.items = [item for item in self.items if item.id != item_id]
-
-    def acquire_item(self, item_id):
-        for item in self.items:
-            if item.id == item_id:
-                item.acquired = True
-                if item.quantity > 0:
-                    item.quantity -= 1

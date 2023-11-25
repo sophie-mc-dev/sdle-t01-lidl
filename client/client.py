@@ -179,6 +179,7 @@ while True:
             print("\nChoose one option:")
             print(" 1 - Add item")
             print(" 2 - Delete item")
+            print(" 3 - Acquire item")
             print(" 0 - Exit")
 
             key = input("Option: ")
@@ -223,6 +224,38 @@ while True:
                         print(delete_item_from_list_file(client_username, item_number-1))
                     except ValueError:
                         print("Item number must be an integer.")
+
+            elif key == "3":
+
+                is_file_empty = True
+                to_print = "\nChoose an item to mark as acquired: \n"
+                items = []
+                try:
+                    with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+                        idx = 1
+                        for line in file:
+                            is_file_empty = False
+                            name, quantity, acquired = line.strip().split(':')
+                            string = str(idx) + " - [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
+                            items.append(string)
+                            idx += 1
+                except FileNotFoundError:
+                    pass
+
+                if is_file_empty:
+                    print("\nYou have no items to acquire.\n")
+                else:  
+                    to_print += "\n".join(items)
+                    print(to_print)
+
+                    item_number = input("> Item number: ")
+
+                    try:
+                        item_number = int(item_number)
+                        print(acquire_item_from_list_file(client_username, item_number-1))
+                    except ValueError:
+                        print("Item number must be an integer.")
+                
 
             elif key == "0":
                 print("End of connection.\n")
