@@ -22,8 +22,9 @@ client_socket.connect((host, port))
 client_list = ""
 file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
 
+username = client_socket.recv(1024).decode()
 
-authenticated = False
+"""authenticated = False
 
 while not authenticated:
     # Authentication loop
@@ -39,7 +40,7 @@ while not authenticated:
         message = client_socket.recv(1024).decode()
         print(message)
         if 'Authentication successful' in message:
-            client_username = username
+            username = username
             authenticated = True
 
     elif option == '2':
@@ -51,9 +52,9 @@ while not authenticated:
         message = client_socket.recv(1024).decode()
         print(message)
         if 'Registration successful' in message:
-            client_username = username
+            username = username
             authenticated = True
-
+"""
 
 
 listed = False
@@ -205,7 +206,7 @@ while True:
 
                 try:
                     item_quant = int(item_quant)
-                    add_item_to_list_file(client_username, item_name, item_quant)
+                    add_item_to_list_file(username, item_name, item_quant)
                 except ValueError:
                     print("Quantity must be an integer.")
         
@@ -235,7 +236,7 @@ while True:
 
                     try:
                         item_number = int(item_number)
-                        print(delete_item_from_list_file(client_username, item_number-1))
+                        print(delete_item_from_list_file(username, item_number-1))
                     except ValueError:
                         print("Item number must be an integer.")
 
@@ -266,7 +267,7 @@ while True:
 
                     try:
                         item_number = int(item_number)
-                        print(acquire_item_from_list_file(client_username, item_number-1))
+                        print(acquire_item_from_list_file(username, item_number-1))
                     except ValueError:
                         print("Item number must be an integer.")
                 

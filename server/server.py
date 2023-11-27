@@ -2,6 +2,7 @@ import socket
 import threading
 import signal
 import sys
+import uuid
 from os.path import dirname, abspath
 
 parent_dir = dirname(dirname(abspath(__file__)))
@@ -32,6 +33,10 @@ print("\nServer is listening...")
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
 
+    username = str(uuid.uuid4())
+    client_socket.send(username.encode())
+
+    """
     authenticated = False  # Track authentication status
 
     while not authenticated:
@@ -60,8 +65,8 @@ def handle_client(client_socket):
                 authenticated = True
                 user_list[username] = None 
 
-
     # Once authenticated, proceed with list management
+    """
 
     listed = False
 
