@@ -33,40 +33,10 @@ print("\nServer is listening...")
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
 
+    # create random username to identify client
     username = str(uuid.uuid4())
     client_socket.send(username.encode())
 
-    """
-    authenticated = False  # Track authentication status
-
-    while not authenticated:
-
-        # message = authentication||registration:username:password
-        encoded_message = client_socket.recv(1024).decode().strip()
-
-        # Split the received data using '\n' as the separator and store it in a list
-        message = encoded_message.split(':')
-
-        choice, username, password = message
-
-        if choice == "authentication":
-            if username in user_credentials and user_credentials[username] == password:
-                authenticated = True
-                to_send = "Authentication successful."
-                client_socket.send(to_send.encode())
-            else:
-                client_socket.send("Authentication failed. Please try again.".encode())
-        
-        elif choice == "registration":
-            registration_result = register_user(username, password)
-            print(registration_result)
-            client_socket.send(registration_result.encode())
-            if ("Registration successful" in registration_result):
-                authenticated = True
-                user_list[username] = None 
-
-    # Once authenticated, proceed with list management
-    """
 
     listed = False
 

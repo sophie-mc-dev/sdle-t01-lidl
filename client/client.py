@@ -19,42 +19,11 @@ port = 5555
 # Connect to the server
 client_socket.connect((host, port))
 
-client_list = ""
-file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
 
 username = client_socket.recv(1024).decode()
 
-"""authenticated = False
-
-while not authenticated:
-    # Authentication loop
-
-    print("\n1 - Log in\n2 - Register\nYour choice:")
-    option = input("option: ")
-    if option == '1':
-        username = input("> username: ")
-        password = input("> password: ")
-        to_send = "authentication" + ':' + username + ':' + password
-        client_socket.send(to_send.encode())
-
-        message = client_socket.recv(1024).decode()
-        print(message)
-        if 'Authentication successful' in message:
-            username = username
-            authenticated = True
-
-    elif option == '2':
-        username = input("> username: ")
-        password = input("> password: ")
-        to_send = "registration" + ':' + username + ':' + password
-        client_socket.send(to_send.encode())
-
-        message = client_socket.recv(1024).decode()
-        print(message)
-        if 'Registration successful' in message:
-            username = username
-            authenticated = True
-"""
+file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
+clients_lists_dir = db_dir + "/client_data/clients_lists/"
 
 
 listed = False
@@ -66,12 +35,10 @@ while not listed:
         print("There are no active shooping lists. Let's create one for you.\n")
 
         list_id = extract_list_id(message)
-        if list_id is not None:
-            client_list = list_id
 
         # create a personal shopping list (copy from the original),
         # this list is not shared with anybody
-        create_file_from_url(username, db_dir + "/client_data/clients_lists", [])
+        create_file_from_url(username, clients_lists_dir, [])
 
         print(f"Your list id is '{client_list}'.")
 
@@ -85,39 +52,35 @@ while not listed:
         if "Create new shopping list" in message: # option 1
             print("Let's create a new shopping list.\n")
             print(message)
+
             list_id = extract_list_id(message)
-            if list_id is not None:
-                client_list = list_id
 
             # create a personal shopping list (copy from the original),
             # this list is not shared with anybody
-            create_file_from_url(username, db_dir + "/client_data/clients_lists", [])
+            create_file_from_url(username, clients_lists_dir, [])
 
             print(f"You are associated to list id '{client_list}'.")
 
         elif "Choose one list ID" in message: # option 2
             print(message)
 
-            list_id = input("List ID: ")
-            client_socket.send(list_id.encode())
+            chosen_list_id = input("List ID: ")
+            client_socket.send(chosen_list_id.encode())
 
             message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
-
             list_id = extract_list_id(message)
-            if list_id is not None:
-                client_list = list_id
 
             client_socket.send("Has content?".encode())
             # create a personal shopping list (copy from the original),
             # this list is not shared with anybody
             message = client_socket.recv(1024).decode()
             if "empty_list" in message:
-                create_file_from_url(username, db_dir + "/client_data/clients_lists", [])
+                create_file_from_url(username, clients_lists_dir, [])
             else:
                 file_content = message.strip().split(',')
                 print("file content:")
                 print(file_content)
-                create_file_from_url(username, db_dir + "/client_data/clients_lists", file_content)
+                create_file_from_url(username, clients_lists_dir, file_content)
             
             print(f"You are associated to list id '{client_list}'.")
 
@@ -132,14 +95,13 @@ while True:
 
     if "Show menu" in message:
 
-        # antes de mostrar a lista, dar pull da do servidor
-        
+        # antes de mostrar a lista, dar pull da do servidor:        
         # ---------- server sync: -----------
         
         # read client's list
         items_str = ""
         try:
-            with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+            with open(file_path, 'r') as file:
                 for line in file:
                     items_str += line
         except FileNotFoundError:
@@ -164,7 +126,7 @@ while True:
 
             # update client.txt
             try:
-                with open(db_dir + "/client_data/clients_lists/" + username + '.txt', 'w') as file:
+                with open(file_path, 'w') as file:
                     for line in items:
                         file.write(line)
             except FileNotFoundError:
@@ -215,7 +177,7 @@ while True:
                 to_print = "\nChoose an item to delete: \n"
                 items = []
                 try:
-                    with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+                    with open(file_path, 'r') as file:
                         idx = 1
                         for line in file:
                             is_file_empty = False
@@ -246,7 +208,7 @@ while True:
                 to_print = "\nChoose an item to mark as acquired: \n"
                 items = []
                 try:
-                    with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
+                    with open(file_path, 'r') as file:
                         idx = 1
                         for line in file:
                             is_file_empty = False
@@ -275,9 +237,6 @@ while True:
             elif key == "0":
                 print("End of connection.\n")
                 break
-
-            # dar push para o servidor!
-            # ...
 
 
 
