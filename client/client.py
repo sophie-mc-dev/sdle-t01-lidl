@@ -12,23 +12,26 @@ from shared.utils import *
 # Create a socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Set the host and port
-host = "localhost"
-port = 5555
+# Set the host and port of the load balancer
+load_balancer_host = "localhost"
+load_balancer_port = 9090
 
-# Connect to the server
-client_socket.connect((host, port))
+# Connect to the load balancer
+client_socket.connect((load_balancer_host, load_balancer_port))
 
 client_list = ""
 file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
 
+client_socket.send("Hello from the client!".encode())
+response = client_socket.recv(1024).decode()
+print(response)  # DOESNT RECEIVE ANYTHING
 
 authenticated = False
-
+print("Welcome to the shopping list app!\n") #BUT PRINTS THIS
 while not authenticated:
     # Authentication loop
-    message = client_socket.recv(1024).decode()
-    #print(message)
+    message = client_socket.recv(1024).decode()  
+    print(message)
 
     if "Authentication successful" in message or "Registration successful." in message:
         print(message)

@@ -11,37 +11,34 @@ from shared.operations import *
 from shared.utils import *
 
 
+if len(sys.argv) != 2:
+    print("Usage: python server.py <port>")
+    sys.exit(1)
 
-
-
-
-# Create a socket
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Set the host and port
-host = "localhost"
-port = 5555
-
-# Bind the socket to the host and port
-server_socket.bind((host, port))
-
-# Listen for incoming connections
-server_socket.listen(5)  # 5 connections for now
-print("\nServer is listening...")
-
+port = int(sys.argv[1])
 
 
 
 
 # Function to handle a client
-def handle_client(client_socket):
+def handle_client(client_socket, port):
     print(f"Connection from {client_socket.getpeername()}")
+
+    message = client_socket.recv(1024).decode().strip()
+    print("Message:", message)       # RECEIVES HELLO FROM THE CLIENT HERE
+    client_socket.send("\nHello from the server".encode())
 
     authenticated = False  # Track authentication status
 
     while not authenticated:
+
+        print("Waiting for client to choose an option.")
         client_socket.send("\n1 - Log in\n2 - Register\nYour choice:".encode())
-        choice = client_socket.recv(1024).decode().strip()
+        try:
+            choice = client_socket.recv(1024).decode().strip()
+        except ConnectionAbortedError:
+            print("Client disconnected unexpectedly.")
+            break
 
         if choice == "1":
             # Authentication loop
@@ -224,17 +221,34 @@ def signal_handler(sig, frame):
 # Register the signal handler
 signal.signal(signal.SIGINT, signal_handler)
 
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = "localhost"
+server_socket.bind((host, port))
+server_socket.listen(5)  # 5 connections for now
+print("\nServer is listening...")
+
 
 # Main server loop
 while True:
-    client_socket, client_address = server_socket.accept()
+    client_socket, _ = server_socket.accept()
+    print("Received connection from", client_socket.getpeername())
 
     try:
 
 
         # Pass the client socket to the chosen server for handling
-        handle_client_thread = threading.Thread(target=handle_client, args=(client_socket,))
+        handle_client_thread = threading.Thread(target=handle_client, args=(client_socket,port))
         handle_client_thread.start()
+
+        try:
+            # Send a confirmation message to the load balancer
+            client_socket.send("Ready".encode())
+        except (ConnectionAbortedError, ConnectionResetError):
+            print("Load balancer disconnected unexpectedly.")
+            handle_client_thread.join()  # Wait for the handle_client_thread to finish
+            break
+
 
     except ValueError as e:
         print("No servers available. Handle this case appropriately.")
+    
