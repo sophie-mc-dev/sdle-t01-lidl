@@ -141,14 +141,13 @@ while True:
         #----------------------------------
 
         # Show user list content
+        print("\n------------ MENU ------------")
         print_user_list(username)
 
         print("\nChoose one option:")
         print(" 1 - Modify Shopping List")
         print(" 0 - Exit")
-            
         key = input("Option: ")
-        #client_socket.send(key.encode()) # only for key 4
             
 
         if key == "1":
@@ -156,9 +155,7 @@ while True:
             print(" 1 - Add item")
             print(" 2 - Delete item")
             print(" 0 - Exit")
-
             key = input("Option: ")
-            #client_socket.send(key.encode())
 
             if key == "1": 
                 item_name = input("> Name of the item: ")
@@ -166,10 +163,14 @@ while True:
 
                 try:
                     item_quant = int(item_quant)
-                    add_item_to_list_file(username, item_name, item_quant)
+                    # adicionar o novo elemento:
+                    client_list[username].add_item(item_name, item_quant, False)
+                    print_user_list(username)
+
                 except ValueError:
                     print("Quantity must be an integer.")
         
+
             elif key == "2": 
                 is_file_empty = True
                 to_print = "\nChoose an item to delete: \n"
@@ -182,12 +183,9 @@ while True:
                     print("\nYou have no items to delete.\n")
                 else:
                     item_ID = input("> Item ID: ")
-
-                    try:
-                        item_ID = int(item_ID)
-                        print(delete_item_from_list_file(username, item_ID))
-                    except ValueError:
-                        print("Item number must be an integer.")
+                    client_list[username].delete_item(item_ID)
+                    print("Item deleted with success.\n")
+                    print_user_list(username)
 
             elif key == "0":
                 print("End of connection.\n")

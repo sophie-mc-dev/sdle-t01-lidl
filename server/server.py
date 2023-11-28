@@ -49,7 +49,7 @@ def handle_client(client_socket):
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
 
-            print("\n=> CLIENT CONTENT from server:")
+            print("\n=> Client content from server:")
             for item in client_list[list_id].items:
                 print(item.__str__())
             print("-------------------")
@@ -64,8 +64,9 @@ def handle_client(client_socket):
                 list_id = create_new_shopping_list(username)  
 
                 to_send = to_send + "Your list id is '" + list_id + "'."
-                client_socket.send(to_send.encode())  
-                print("\n=> CLIENT CONTENT from server:")
+                client_socket.send(to_send.encode()) 
+
+                print("\n=> Client content from server:")
                 for item in client_list[list_id].items:
                     print(item.__str__())
                 print("-------------------")
@@ -169,7 +170,7 @@ def handle_client(client_socket):
             print("---------------")
 
             
-            all.append("Syncronization done with success.\n")
+            all_items.append("Syncronization done with success.\n")
 
             str_to_send = ""
             for elem in all_items:
