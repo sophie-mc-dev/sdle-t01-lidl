@@ -56,7 +56,7 @@ while not listed:
             print(message)
 
             list_id = extract_list_id(message)
-            client_list[username] = ShoppingList(list_id)
+            client_list[username] = ShoppingList()
 
 
             # create a personal shopping list (copy from the original),
@@ -106,8 +106,8 @@ while True:
         
         # read client's list
         items_str = ""
-        for item in client_list[username].items:
-            items_str += item.name + ':' + str(item.quantity) + ':' + str(item.acquired) + '\n'
+        for item in client_list[username].Items:
+            items_str +=  item["name"] + ':' + str( item["quantity"]) + ':' + str( item["acquired"]) + '\n'
 
         if items_str != "":
 
@@ -163,12 +163,14 @@ while True:
             #client_socket.send(key.encode())
 
             if key == "1": 
-                item_name = input("> Name of the item: ")
-                item_quant = input("> Quantity: ")
+                item={}
+                item_id = str(uuid.uuid4())  
+                item["name"] = input("Enter item name: ")
+                item["quantity"] = input("Enter item quantity: ")
 
                 try:
-                    item_quant = int(item_quant)
-                    add_item_to_list_file(username, item_name, item_quant)
+                    item["quantity"] = int( item["quantity"])
+                    add_item_to_list_file(username, item_id, item)
                 except ValueError:
                     print("Quantity must be an integer.")
         

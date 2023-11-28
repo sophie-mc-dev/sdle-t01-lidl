@@ -114,5 +114,5 @@ def register_user(username, password):
 # function only called by the client
 def print_user_list(username):
     print("\n> Your List content:")
-    for item in client_list[username].items:
+    for item in client_list[username].Items:
         print(item.__str__())
