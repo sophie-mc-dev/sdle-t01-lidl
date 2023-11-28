@@ -147,26 +147,37 @@ def handle_client(client_socket):
             client_items_not_treated = encoded_client_items.split('\n')
             # Add '\n' to the end of each element in the list
             client_items = [item + '\n' for item in client_items_not_treated]
-            print(client_items)
-
-
+            # 'client_items' contains the local client items
                 
-            server_items = client_list[user_list[username]]
-
-            # falat fazer aqui umas cenas mas eu ja acabo
-
- 
+            server_items = []
+            for item in client_list[user_list[username]].items:
+                item_str = item.name + ':' + str(item.quantity) + ':' + str(item.acquired) + '\n'
+                server_items.append(item_str)
+            # 'server_items' contains the server items
             
-            client_items.append("Syncronization done with success.\n")
+            # 'all_items' contains the local client items union with server items
+            all_items = list(set(client_items + server_items))
+
+            client_list[user_list[username]] = ShoppingList(list_id) # clears server shopping list
+            for item in all_items:
+                item_name, quantity, acquired = item.strip().split(':')
+                client_list[user_list[username]].add_item(item_name, quantity, acquired)
+
+            print("- What is in server now:")
+            for item in client_list[user_list[username]].items:
+                print(item.__str__())
+            print("---------------")
+
+            
+            all.append("Syncronization done with success.\n")
 
             str_to_send = ""
-            for elem in client_items:
+            for elem in all_items:
                 str_to_send += elem
 
             # send new items and message output to client
             client_socket.send(str_to_send.encode())
 
-        
     
     client_socket.close()
 

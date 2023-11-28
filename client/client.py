@@ -125,14 +125,12 @@ while True:
 
             # Add '\n' to the end of each element in the list
             items = [item + '\n' for item in list_plus_message]
+            # 'items' contains the items from local client union with server items
 
-            # update client.txt
-            try:
-                with open(file_path, 'w') as file:
-                    for line in items:
-                        file.write(line)
-            except FileNotFoundError:
-                pass
+            client_list[username] = ShoppingList(list_id) # clear client shopping list
+            for item in items:
+                item_name, quantity, acquired = item.strip().split(':')
+                client_list[username].add_item(item_name, quantity, acquired)
 
             print(sync_output)
 

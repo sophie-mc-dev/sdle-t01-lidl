@@ -116,3 +116,5 @@ def print_user_list(username):
     print("\n> Your List content:")
     for item in client_list[username].items:
         print(item.__str__())
+    print("---------------")
+    
