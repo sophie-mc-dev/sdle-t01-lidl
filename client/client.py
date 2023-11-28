@@ -40,7 +40,7 @@ while not listed:
         # this list is not shared with anybody
         create_file_from_url(username, clients_lists_dir, [])
 
-        print(f"Your list id is '{client_list}'.")
+        print(f"Your list id is '{list_id}'.")
 
     elif "There already are active shooping lists" in message:
         print("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list")
@@ -59,7 +59,7 @@ while not listed:
             # this list is not shared with anybody
             create_file_from_url(username, clients_lists_dir, [])
 
-            print(f"You are associated to list id '{client_list}'.")
+            print(f"You are associated to list id '{list_id}'.")
 
         elif "Choose one list ID" in message: # option 2
             print(message)
@@ -82,7 +82,7 @@ while not listed:
                 print(file_content)
                 create_file_from_url(username, clients_lists_dir, file_content)
             
-            print(f"You are associated to list id '{client_list}'.")
+            print(f"You are associated to list id '{list_id}'.")
 
     listed = True
     
