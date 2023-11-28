@@ -113,21 +113,6 @@ def register_user(username, password):
 # prints current client local list
 # function only called by the client
 def print_user_list(username):
-    is_file_empty = True
-    items = []
-    items.append("\nYour list content - after server pull:")
-    try:
-        with open(db_dir + "/client_data/clients_lists/" + username + ".txt", 'r') as file:
-            for line in file:
-                if is_file_empty:
-                    is_file_empty = False
-                name, quantity, acquired = line.strip().split(':')
-                string = "- [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
-                items.append(string)
-    except FileNotFoundError:
-        pass
-
-    if is_file_empty:
-        print("\nYour shopping list is empty. Try to add some items to your list.\n")
-    else:  
-        print("\n".join(items))
+    print("\n> Your List content:")
+    for item in client_list[username].items:
+        print(item.__str__())

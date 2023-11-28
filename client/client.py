@@ -35,10 +35,12 @@ while not listed:
         print("There are no active shooping lists. Let's create one for you.\n")
 
         list_id = extract_list_id(message)
+        client_list[username] = ShoppingList(list_id)
+
 
         # create a personal shopping list (copy from the original),
         # this list is not shared with anybody
-        create_file_from_url(username, clients_lists_dir, [])
+        #create_file_from_url(username, clients_lists_dir, [])
 
         print(f"Your list id is '{list_id}'.")
 
@@ -54,10 +56,12 @@ while not listed:
             print(message)
 
             list_id = extract_list_id(message)
+            client_list[username] = ShoppingList(list_id)
+
 
             # create a personal shopping list (copy from the original),
             # this list is not shared with anybody
-            create_file_from_url(username, clients_lists_dir, [])
+            #create_file_from_url(username, clients_lists_dir, [])
 
             print(f"You are associated to list id '{list_id}'.")
 
@@ -69,18 +73,20 @@ while not listed:
 
             message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
             list_id = extract_list_id(message)
+            client_list[username] = ShoppingList(list_id)
+
 
             client_socket.send("Has content?".encode())
             # create a personal shopping list (copy from the original),
             # this list is not shared with anybody
             message = client_socket.recv(1024).decode()
-            if "empty_list" in message:
-                create_file_from_url(username, clients_lists_dir, [])
-            else:
-                file_content = message.strip().split(',')
-                print("file content:")
-                print(file_content)
-                create_file_from_url(username, clients_lists_dir, file_content)
+            #if "empty_list" in message:
+            #    create_file_from_url(username, clients_lists_dir, [])
+            #else:
+            #    file_content = message.strip().split(',')
+            #    print("file content:")
+            #    print(file_content)
+            #    create_file_from_url(username, clients_lists_dir, file_content)
             
             print(f"You are associated to list id '{list_id}'.")
 
@@ -100,12 +106,8 @@ while True:
         
         # read client's list
         items_str = ""
-        try:
-            with open(file_path, 'r') as file:
-                for line in file:
-                    items_str += line
-        except FileNotFoundError:
-            pass
+        for item in client_list[username].items:
+            items_str += item.name + ':' + str(item.quantity) + ':' + str(item.acquired) + '\n'
 
         if items_str != "":
 
@@ -138,7 +140,6 @@ while True:
             client_socket.send("noContent".encode())
             print("There's no need to syncronize with server.\n")
 
-
         #----------------------------------
 
         # Show user list content
@@ -156,7 +157,6 @@ while True:
             print("\nChoose one option:")
             print(" 1 - Add item")
             print(" 2 - Delete item")
-            print(" 3 - Acquire item")
             print(" 0 - Exit")
 
             key = input("Option: ")
@@ -175,69 +175,25 @@ while True:
             elif key == "2": 
                 is_file_empty = True
                 to_print = "\nChoose an item to delete: \n"
-                items = []
-                try:
-                    with open(file_path, 'r') as file:
-                        idx = 1
-                        for line in file:
-                            is_file_empty = False
-                            name, quantity, acquired = line.strip().split(':')
-                            string = str(idx) + " - [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
-                            items.append(string)
-                            idx += 1
-                except FileNotFoundError:
-                    pass
+                is_empty = True
+                for item in client_list[username].items:
+                    is_empty = False
+                    print(item.__str__())
 
-                if is_file_empty:
+                if is_empty:
                     print("\nYou have no items to delete.\n")
-                else:  
-                    to_print += "\n".join(items)
-                    print(to_print)
-
-                    item_number = input("> Item number: ")
+                else:
+                    item_ID = input("> Item ID: ")
 
                     try:
-                        item_number = int(item_number)
-                        print(delete_item_from_list_file(username, item_number-1))
+                        item_ID = int(item_ID)
+                        print(delete_item_from_list_file(username, item_ID))
                     except ValueError:
                         print("Item number must be an integer.")
-
-            elif key == "3":
-
-                is_file_empty = True
-                to_print = "\nChoose an item to mark as acquired: \n"
-                items = []
-                try:
-                    with open(file_path, 'r') as file:
-                        idx = 1
-                        for line in file:
-                            is_file_empty = False
-                            name, quantity, acquired = line.strip().split(':')
-                            string = str(idx) + " - [Name: " + name + ", Quantity: " + quantity + ", Acquired: " + acquired + "]"
-                            items.append(string)
-                            idx += 1
-                except FileNotFoundError:
-                    pass
-
-                if is_file_empty:
-                    print("\nYou have no items to acquire.\n")
-                else:  
-                    to_print += "\n".join(items)
-                    print(to_print)
-
-                    item_number = input("> Item number: ")
-
-                    try:
-                        item_number = int(item_number)
-                        print(acquire_item_from_list_file(username, item_number-1))
-                    except ValueError:
-                        print("Item number must be an integer.")
-                
 
             elif key == "0":
                 print("End of connection.\n")
                 break
-
 
 
         elif key == "0":
