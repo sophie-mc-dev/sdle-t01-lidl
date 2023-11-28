@@ -73,6 +73,8 @@ while not listed:
 
             message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
             list_id = extract_list_id(message)
+            print("---list_id:")
+            print(list_id)
             client_list[username] = ShoppingList(list_id)
 
 
@@ -80,13 +82,17 @@ while not listed:
             # create a personal shopping list (copy from the original),
             # this list is not shared with anybody
             message = client_socket.recv(1024).decode()
-            #if "empty_list" in message:
-            #    create_file_from_url(username, clients_lists_dir, [])
-            #else:
-            #    file_content = message.strip().split(',')
-            #    print("file content:")
-            #    print(file_content)
-            #    create_file_from_url(username, clients_lists_dir, file_content)
+            if "empty_list" not in message:
+                # Split the received data using '\n' as the separator and store it in a list
+                list = message.split('\n')
+
+                # Add '\n' to the end of each element in the list
+                items = [item + '\n' for item in list]
+                # 'items' contains the items from local client union with server items
+
+                for item in items:
+                    item_name, quantity, acquired = item.strip().split(':')
+                    client_list[username].add_item(item_name, quantity, acquired)
             
             print(f"You are associated to list id '{list_id}'.")
 
@@ -114,7 +120,7 @@ while True:
             # Send client list items to server
             client_socket.send(items_str.encode())
 
-            # Receive new items list and update client.txt
+            # Receive new items list and update client list
             encoded_list_plus_message = client_socket.recv(1024).decode().strip()
 
             # Split the received data using '\n' as the separator and store it in a list
@@ -142,6 +148,7 @@ while True:
 
         # Show user list content
         print("\n------------ MENU ------------")
+        print("(after server sync)")
         print_user_list(username)
 
         print("\nChoose one option:")

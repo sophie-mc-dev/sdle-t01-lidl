@@ -103,24 +103,26 @@ def handle_client(client_socket):
                 client_socket.send(to_send.encode())
 
                 message = client_socket.recv(1024).decode() # needed just to messages logic work
-                if is_file_empty(db_dir + "/server_data/shopping_lists/" + list_id + ".txt"):
-                    client_socket.send("empty_list".encode())
-                else:
-                    # get content from list and send it to client
-                    file_content = []
-                    try:
-                        with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
-                            for line in file:
-                                file_content.append(line)
-                        client_socket.send(",".join(file_content).encode())                    
-                        
-                    except FileNotFoundError:
-                        pass
+                
 
-                print("\n=> CLIENT CONTENT from server:")
+                is_empty = True
+                print("\n=>> what is now in server:")
                 for item in client_list[user_list[username]].items:
+                    is_empty = False
                     print(item.__str__())
                 print("-------------------")
+
+                if is_empty:
+                    client_socket.send("empty_list".encode())
+                else:
+                    server_items = []
+                    for item in client_list[user_list[username]].items:
+                        item_str = item.name + ':' + str(item.quantity) + ':' + str(item.acquired)
+                        server_items.append(item_str)
+                    # 'server_items' contains the server items
+
+                    client_socket.send('\n'.join(server_items).encode())                    
+                        
 
         listed = True
         
@@ -158,6 +160,8 @@ def handle_client(client_socket):
             
             # 'all_items' contains the local client items union with server items
             all_items = list(set(client_items + server_items))
+            print("all_items:")
+            (print(all_items))
 
             client_list[user_list[username]] = ShoppingList(list_id) # clears server shopping list
             for item in all_items:
