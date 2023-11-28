@@ -18,7 +18,6 @@ def create_new_shopping_list(username):
         for username, lists_IDs in user_list.items():
             file.write(f"{username}:{lists_IDs}\n")
 
-    create_file_from_url(list_id, db_dir + "/server_data/shopping_lists", [])
     client_list[list_id] = ShoppingList(list_id)
     
     return list_id

@@ -23,3 +23,6 @@ class ShoppingList: # represents a shopping list that contains multiple items
 
     def delete_item(self, item_id):
         self.items = [item for item in self.items if item.id != item_id]
+
+    def is_empty(self):
+        return len(self.items) == 0

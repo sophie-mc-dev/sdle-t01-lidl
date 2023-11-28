@@ -48,11 +48,6 @@ def handle_client(client_socket):
             list_id = create_new_shopping_list(username) # create new shopping list 
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
-
-            print("\n=> Client content from server:")
-            for item in client_list[list_id].items:
-                print(item.__str__())
-            print("-------------------")
             
         else:
             client_socket.send("There already are active shooping lists".encode())
@@ -65,11 +60,6 @@ def handle_client(client_socket):
 
                 to_send = to_send + "Your list id is '" + list_id + "'."
                 client_socket.send(to_send.encode()) 
-
-                print("\n=> Client content from server:")
-                for item in client_list[list_id].items:
-                    print(item.__str__())
-                print("-------------------")
 
             elif option == "2":                
                 to_send = "\nChoose one list ID:\n"
@@ -99,24 +89,17 @@ def handle_client(client_socket):
                     for username, list_id in user_list.items():
                         file.write(f"{username}:{list_id}\n")
 
-                to_send = "Your list id is '" + user_list[username] + "'."
+                list_id = user_list[username]
+
+                to_send = "Your list id is '" + list_id + "'."
                 client_socket.send(to_send.encode())
 
                 message = client_socket.recv(1024).decode() # needed just to messages logic work
-                
-
-                is_empty = True
-                print("\n=>> what is now in server:")
-                for item in client_list[user_list[username]].items:
-                    is_empty = False
-                    print(item.__str__())
-                print("-------------------")
-
-                if is_empty:
+                if client_list[list_id].is_empty():
                     client_socket.send("empty_list".encode())
                 else:
                     server_items = []
-                    for item in client_list[user_list[username]].items:
+                    for item in client_list[list_id].items:
                         item_str = item.name + ':' + str(item.quantity) + ':' + str(item.acquired)
                         server_items.append(item_str)
                     # 'server_items' contains the server items
@@ -126,7 +109,7 @@ def handle_client(client_socket):
 
         listed = True
         
-    print("User '", username, "' is associated with shopping list '", user_list[username], "'.")
+    print("User '", username, "' is associated with shopping list '", list_id, "'.")
 
 
 
@@ -138,7 +121,6 @@ def handle_client(client_socket):
         # Later implement CRDTs here
 
 
-        
         encoded_client_items = client_socket.recv(1024).decode().strip()
         
         if "noContent" in encoded_client_items:
@@ -153,28 +135,26 @@ def handle_client(client_socket):
             # 'client_items' contains the local client items
                 
             server_items = []
-            for item in client_list[user_list[username]].items:
+            for item in client_list[list_id].items:
                 item_str = item.name + ':' + str(item.quantity) + ':' + str(item.acquired) + '\n'
                 server_items.append(item_str)
             # 'server_items' contains the server items
             
             # 'all_items' contains the local client items union with server items
             all_items = list(set(client_items + server_items))
-            print("all_items:")
-            (print(all_items))
 
-            client_list[user_list[username]] = ShoppingList(list_id) # clears server shopping list
+            client_list[list_id] = ShoppingList(list_id) # clears server shopping list
             for item in all_items:
                 item_name, quantity, acquired = item.strip().split(':')
-                client_list[user_list[username]].add_item(item_name, quantity, acquired)
+                client_list[list_id].add_item(item_name, quantity, acquired)
 
-            print("- What is in server now:")
-            for item in client_list[user_list[username]].items:
+            print("\n=>> what is now in server list '" + list_id + "':")
+            for item in client_list[list_id].items:
                 print(item.__str__())
-            print("---------------")
+            print("-------------------------\n")
 
             
-            all_items.append("Syncronization done with success.\n")
+            all_items.append("\nSyncronization done with success.\n")
 
             str_to_send = ""
             for elem in all_items:

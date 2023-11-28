@@ -37,14 +37,10 @@ while not listed:
         list_id = extract_list_id(message)
         client_list[username] = ShoppingList(list_id)
 
-
-        # create a personal shopping list (copy from the original),
-        # this list is not shared with anybody
-        #create_file_from_url(username, clients_lists_dir, [])
-
         print(f"Your list id is '{list_id}'.")
 
     elif "There already are active shooping lists" in message:
+        
         print("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list")
         option = input("Option: ")
         client_socket.send(option.encode())
@@ -58,11 +54,6 @@ while not listed:
             list_id = extract_list_id(message)
             client_list[username] = ShoppingList(list_id)
 
-
-            # create a personal shopping list (copy from the original),
-            # this list is not shared with anybody
-            #create_file_from_url(username, clients_lists_dir, [])
-
             print(f"You are associated to list id '{list_id}'.")
 
         elif "Choose one list ID" in message: # option 2
@@ -73,15 +64,13 @@ while not listed:
 
             message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
             list_id = extract_list_id(message)
-            print("---list_id:")
-            print(list_id)
             client_list[username] = ShoppingList(list_id)
 
 
             client_socket.send("Has content?".encode())
-            # create a personal shopping list (copy from the original),
-            # this list is not shared with anybody
             message = client_socket.recv(1024).decode()
+
+            # if that list already has some content..
             if "empty_list" not in message:
                 # Split the received data using '\n' as the separator and store it in a list
                 list = message.split('\n')
@@ -107,7 +96,6 @@ while True:
 
     if "Show menu" in message:
 
-        # antes de mostrar a lista, dar pull da do servidor:        
         # ---------- server sync: -----------
         
         # read client's list
@@ -142,14 +130,19 @@ while True:
 
         else:
             client_socket.send("noContent".encode())
-            print("There's no need to syncronize with server.\n")
+            #print("There's no content to send.\n")
 
         #----------------------------------
 
+
         # Show user list content
         print("\n------------ MENU ------------")
-        print("(after server sync)")
-        print_user_list(username)
+        
+        if client_list[username].is_empty():
+            print("> Your list is empty.")
+        else: 
+            print("After server sync:")
+            print_user_list(username)
 
         print("\nChoose one option:")
         print(" 1 - Modify Shopping List")
@@ -172,6 +165,7 @@ while True:
                     item_quant = int(item_quant)
                     # adicionar o novo elemento:
                     client_list[username].add_item(item_name, item_quant, False)
+                    print("Item added with success.\n")
                     print_user_list(username)
 
                 except ValueError:
@@ -179,14 +173,11 @@ while True:
         
 
             elif key == "2": 
-                is_file_empty = True
-                to_print = "\nChoose an item to delete: \n"
-                is_empty = True
+                print("\nChoose an item to delete:")
                 for item in client_list[username].items:
-                    is_empty = False
                     print(item.__str__())
 
-                if is_empty:
+                if client_list[username].is_empty():
                     print("\nYou have no items to delete.\n")
                 else:
                     item_ID = input("> Item ID: ")
