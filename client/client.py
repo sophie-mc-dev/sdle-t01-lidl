@@ -120,6 +120,9 @@ while True:
             # Add '\n' to the end of each element in the list
             items = [item + '\n' for item in list_plus_message]
             # 'items' contains the items from local client union with server items
+            
+            print("items:")
+            print(items)
 
             client_list[username] = ShoppingList(list_id) # clear client shopping list
             for item in items:
@@ -154,6 +157,7 @@ while True:
             print("\nChoose one option:")
             print(" 1 - Add item")
             print(" 2 - Delete item")
+            print(" 3 - Acquire item")
             print(" 0 - Exit")
             key = input("Option: ")
 
@@ -173,17 +177,32 @@ while True:
         
 
             elif key == "2": 
-                print("\nChoose an item to delete:")
-                for item in client_list[username].items:
-                    print(item.__str__())
 
                 if client_list[username].is_empty():
-                    print("\nYou have no items to delete.\n")
+                    print("\n> You have no items to delete.\n")
                 else:
-                    item_ID = input("> Item ID: ")
+                    print("\nChoose an item to delete:\n")
+                    for item in client_list[username].items:
+                        print(item.__str__())
+                    item_ID = input("\n> Item ID: ")
                     client_list[username].delete_item(item_ID)
                     print("Item deleted with success.\n")
                     print_user_list(username)
+
+
+            elif key == "3": 
+
+                if client_list[username].is_empty():
+                    print("\nYou have no items to mark.\n")
+                else:
+                    print("\nChoose an item to mark as acquired:\n")
+                    for item in client_list[username].items:
+                        print(item.__str__())
+                    item_ID = input("\n> Item ID: ")
+                    client_list[username].acquire_item(item_ID)
+                    print("Item acquired with success.\n")
+                    print_user_list(username)
+
 
             elif key == "0":
                 print("End of connection.\n")

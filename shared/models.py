@@ -24,5 +24,11 @@ class ShoppingList: # represents a shopping list that contains multiple items
     def delete_item(self, item_id):
         self.items = [item for item in self.items if item.id != item_id]
 
+    def acquire_item(self, item_id):
+        for item in self.items:
+            if item.id == item_id:
+                item.acquired = True
+                break
+
     def is_empty(self):
         return len(self.items) == 0

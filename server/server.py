@@ -154,7 +154,7 @@ def handle_client(client_socket):
             print("-------------------------\n")
 
             
-            all_items.append("\nSyncronization done with success.\n")
+            all_items.append("Syncronization done with success.\n")
 
             str_to_send = ""
             for elem in all_items:
