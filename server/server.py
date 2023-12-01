@@ -24,16 +24,14 @@ port = int(sys.argv[1])
 def handle_client(client_socket, port):
     print(f"Connection from {client_socket.getpeername()}")
 
-    message = client_socket.recv(1024).decode().strip()
-    print("Message:", message)       # RECEIVES HELLO FROM THE CLIENT HERE
-    client_socket.send("\nHello from the server".encode())
+
 
     authenticated = False  # Track authentication status
 
     while not authenticated:
 
-        print("Waiting for client to choose an option.")
-        client_socket.send("\n1 - Log in\n2 - Register\nYour choice:".encode())
+        print("Waiting for client to choose an option.") # PRINTA ISTO COM SUCESSO
+        client_socket.send("\n1 - Log in\n2 - Register\nYour choice:".encode()) # ERRO AQUI
         try:
             choice = client_socket.recv(1024).decode().strip()
         except ConnectionAbortedError:
@@ -44,11 +42,14 @@ def handle_client(client_socket, port):
             # Authentication loop
             client_socket.send("Username:".encode())
             username = client_socket.recv(1024).decode().strip()
+            print("Username:", username)
 
             client_socket.send("Password:".encode())
             password = client_socket.recv(1024).decode().strip()
+            print("Password:", password)
 
             if username in user_credentials and user_credentials[username] == password:
+                print("Authentication successful.")
                 authenticated = True
                 to_send = "Authentication successful. You can now access your list.\nYour username is '" + username + "'"
                 client_socket.send(to_send.encode())

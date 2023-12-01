@@ -25,7 +25,7 @@ sock.bind(("localhost", 9090))
 sock.listen(5)
 
 while True:
-    # Accept an incoming connection
+    # Accept an incoming connection from the client
     client_sock, client_addr = sock.accept()
     print("Received connection from", client_addr)
 
@@ -48,20 +48,30 @@ while True:
     server_sock.connect(("localhost", current_server_port))
 
     try:
-        # Forward the connection
-        server_sock.sendall(client_sock.recv(1024))
+        # Forward the connection request to the server
+        #server_sock.sendall("Ready")  # Notify the server that the client is ready
+        #print("Sent a ready to the server")
+        back = server_sock.recv(1024)
+        #client_sock.sendall(back)  # Forward any initial response from the server to the client
+        print("send the response to the client", back)
+
         print("Forwarded the connection to port", current_server_port)
 
-        confirmation = server_sock.recv(1024).decode()
+        # Forward messages from client to server and vice versa
+        while True:
+            data = client_sock.recv(1024)
+            if not data:
+                break
+            server_sock.sendall(data)
 
-        if confirmation != "Ready":
-            print("Server not ready. Closing connections.")
-            # server_sock.close()
-            # client_sock.close()
-        else:
-            print("Server is ready. Closing load balancer connection.")
-            server_sock.close() # DONT REMOVE THIS
-            client_sock.close()
+            response = server_sock.recv(1024)
+            if not response:
+                break
+            client_sock.sendall(response)
+
+        print("Connection closed. Closing load balancer connection.")
+        server_sock.close()
+        client_sock.close()
+
     except Exception as e:
         print("Error forwarding connection:", e)
-
