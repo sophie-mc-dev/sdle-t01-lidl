@@ -67,11 +67,12 @@ def extract_list_id(message):
 # function only called by the client
 def print_user_list(user_id):
     print(f"\n> Your List content:")
-    print(f"Shopping List ID: {user_id}")
+    list_id = client_list[user_id].my_id()
+    print(f"Shopping List ID: {list_id}")
 
     print("Items: ")
     if not client_list[user_id].shopping_map.items():
-        print("Oops. Looks like you have no items yet.")
+        print("Oops... Looks like you have no items yet.")
     else:
         for item_id, item in client_list[user_id].shopping_map.items():
             print(f" Item ID: {item_id}, Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")

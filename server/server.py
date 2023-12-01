@@ -153,7 +153,7 @@ def handle_client(client_socket):
             # 'all_items' contains the local client items union with server items
             all_items = list(set(client_items + server_items))
 
-            client_list[list_id] = ShoppingList(list_id) # clears server shopping list
+            client_list[list_id] = ShoppingList() # clears server shopping list
             for item in all_items:
                 item_name, quantity, acquired = item.strip().split(':')
                 client_list[list_id].add_item(item_name, quantity, acquired)
