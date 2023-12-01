@@ -29,7 +29,7 @@ def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
 
     # Create a random user id to identify the client
-    user_id = "userid1"
+    user_id = "user-" + token_urlsafe(5)
     client_socket.send(user_id.encode())
 
     listed = False
@@ -119,60 +119,49 @@ def handle_client(client_socket):
 
         listed = True
         
-    print("User '", user_id, "' is associated with shopping list '", list_id, "'.")
-
-
+    print("User '", user_id, "' is associated with shopping list '", list_id, "'")
 
     while True:
         client_socket.send("Show menu.\n".encode())
-
-
-        # for now, only substitute the server client's shopping list with the union of his personal list and the server list
-        # Later implement CRDTs here
-
 
         encoded_client_items = client_socket.recv(1024).decode().strip()
         
         if "noContent" in encoded_client_items:
             client_socket.send("No sync".encode())
         
-        else: # syncronize lists
+        else: # Synchronization logic
+            list_id = client_list[list_id].my_id()
 
-            # Split the received data using '\n' as the separator and store it in a list
-            client_items_not_treated = encoded_client_items.split('\n')
-            # Add '\n' to the end of each element in the list
-            client_items = [item + '\n' for item in client_items_not_treated]
-            # 'client_items' contains the local client items
-                
-            server_items = []
-            for item in client_list[list_id].shopping_map.items():
-                item_str = item.name + ':' + str(item.quantity) + ':' + str(item.acquired) + '\n'
-                server_items.append(item_str)
-            # 'server_items' contains the server items
+            # GET SERVER LIST
+            server_shopping_list = client_list[list_id]
+
+            # Get CLIENT list from client socket
+            client_shoppint_list = encoded_client_items.split('\n')
             
-            # 'all_items' contains the local client items union with server items
-            all_items = list(set(client_items + server_items))
+            # MERGE SHOPPING LIST REPLICAS
+            merged_list = server_shopping_list.merge(client_shoppint_list)
 
-            client_list[list_id] = ShoppingList() # clears server shopping list
-            for item in all_items:
-                item_name, quantity, acquired = item.strip().split(':')
-                client_list[list_id].add_item(item_name, quantity, acquired)
+            server_shopping_list = ShoppingList() # clears server shopping list
 
-            print("\n=>> what is now in server list '" + list_id + "':")
-            for item in client_list[list_id].shopping_map.items():
+            for item_id, i in merged_list.shopping_map.items():
+                item['name'], item['quantity'], item['acquired'], item['timestamp'] = i.strip().split(',')
+                client_list[list_id].add_item(item_id, item)
+
+            # Print the updated/merged list in the server
+            print("\n=>> Updated server list '" + list_id + "':")
+            for item in server_shopping_list.shopping_map.items():
                 print(item.__str__())
             print("-------------------------\n")
 
-            
-            all_items.append("Syncronization done with success.\n")
+            # Create a response string containing the updated list and sync success message
+            response = ""
+            for item in server_shopping_list.shopping_map.items():
+                response += item['name'] + ':' + str(item['quantity']) + ':' + str(item['acquired']) + '\n'
 
-            str_to_send = ""
-            for elem in all_items:
-                str_to_send += elem
+            response += "Syncronization done with success.\n"
 
-            # send new items and message output to client
-            client_socket.send(str_to_send.encode())
-
+            # Send the updated list back to the client
+            client_socket.send(response.encode())
     
     client_socket.close()
 
