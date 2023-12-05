@@ -99,8 +99,8 @@ while True:
         # Read client's shopping list
         items_str = ""
 
-        for item in client_list[user_id].shopping_map.items():
-            items_str += str(item[1]['name']) + ':' + str(item[1]['quantity']) + ':' + str(item[1]['acquired']) + '\n'
+        for item_id, item in client_list[user_id].shopping_map.items():
+            items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
 
         if items_str != "":
 
@@ -109,23 +109,34 @@ while True:
 
             # Receive new items list and update client list
             encoded_list_plus_message = client_socket.recv(1024).decode().strip()
+            print("after server synccc_________________")
+            print(encoded_list_plus_message)
 
             # Split the received data using '\n' as the separator and store it in a list
             list_plus_message = encoded_list_plus_message.split('\n')
 
             # separate items from syncronization output
             sync_output = list_plus_message.pop()
+            print(sync_output)
+
 
             # Add '\n' to the end of each element in the list
             items = [item + '\n' for item in list_plus_message]
             # 'items' contains the items from local client union with server items
 
             client_list[user_id] = ShoppingList() # clear client shopping list
-            for i in items:
-                item['name'], item['quantity'], item['acquired'], item['timestamp'] = i.strip().split(',')
+            for line in items:
+                item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+
+                item = {
+                    "name": item_name,
+                    "quantity": item_quantity,
+                    "acquired": item_acquired,
+                    "timestamp": item_timestamp
+                }
+
                 client_list[user_id].add_item(item_id, item)
 
-            print(sync_output)
 
         else:
             client_socket.send("noContent".encode())

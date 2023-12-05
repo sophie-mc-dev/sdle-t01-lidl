@@ -40,8 +40,12 @@ def handle_client(client_socket):
 
             # Create ShoppingList object
             list = ShoppingList()
-            shopping_list_items = list.shopping_map.items()
             list_id = list.my_id()
+
+            print("--   listtt:")
+            print(list.get_shopping_list(list_id))
+
+            #shopping_list_items = list.shopping_map.items()
             user_list[user_id] = list_id
 
             # Save clients lists
@@ -49,7 +53,7 @@ def handle_client(client_socket):
                 for user_id, lists_IDs in user_list.items():
                     file.write(f"{user_id}:{lists_IDs}\n")
 
-            client_list[list_id] = shopping_list_items
+            client_list[list_id] = list
 
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
@@ -134,19 +138,40 @@ def handle_client(client_socket):
             # SERVER LIST = client_list[list_id]
 
             # Get CLIENT list from client socket
-            client_shoppint_list = encoded_client_items.split('\n')
-            print("client list", client_shoppint_list)
+            client_shoppint_list_items = encoded_client_items.split('\n')
+            
+            # create shopping list object for client content
+            client_shoppint_list = ShoppingList()
+            for line in client_shoppint_list_items:
+                item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+
+                item = {
+                    "name": item_name,
+                    "quantity": item_quantity,
+                    "acquired": item_acquired,
+                    "timestamp": item_timestamp
+                }
+
+                client_shoppint_list.add_item(item_id, item)
+
+
+            print("client list", client_shoppint_list.shopping_map)
+            print("server list", client_list[list_id].shopping_map)
+
             
             # MERGE SHOPPING LIST REPLICAS
             merged_list = client_list[list_id].merge(client_shoppint_list)
 
             client_list[list_id] = ShoppingList() # clears server shopping list
 
-            for item_id, i in merged_list.shopping_map.items():
-                item['name'], item['quantity'], item['acquired'], item['timestamp'] = i.strip().split(',')
-                client_list[list_id].add_item(item_id, item)
+            print("merged list_________________")
+            print(merged_list.shopping_map.items())
+            #for key, value in merged_list.shopping_map.items():
+            #    item['name'], item['quantity'], item['acquired'], item['timestamp'] = i.strip().split(',')
+            #    client_list[list_id].add_item(item_id, item)
 
             # Print the updated/merged list in the server
+            client_list[list_id] = merged_list
             print("\n=>> Updated server list '" + list_id + "':")
             for item in client_list[list_id].shopping_map.items():
                 print(item.__str__())
@@ -154,8 +179,8 @@ def handle_client(client_socket):
 
             # Create a response string containing the updated list and sync success message
             response = ""
-            for item in client_list[list_id].shopping_map.items():
-                response += item['name'] + ':' + str(item['quantity']) + ':' + str(item['acquired']) + '\n'
+            for item_id, item in client_list[list_id].shopping_map.items():
+                response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
 
             response += "Syncronization done with success.\n"
 

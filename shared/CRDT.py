@@ -46,11 +46,6 @@ class ShoppingList:
         """Returns the ID of the shopping list."""
         return self.id
     
-    
-    def my_id(self):
-        """Returns the ID of the shopping list."""
-        return self.id
-    
     def contains(self, item_id):
         """Checks if the item is present in the shopping list."""
         return item_id in self.shopping_map
@@ -169,6 +164,8 @@ class ShoppingList:
         # Determine common items between the two sets
         common_items = self_item_ids.intersection(replica_item_ids)
 
+        print("common_items: ", common_items)
+
         # Handle conflicts based on timestamps, quantities and acquired status
         for item_id in common_items:
             self_item = self.shopping_map[item_id]
@@ -210,3 +207,5 @@ class ShoppingList:
             if item_id not in self.acquired_counters:
                 self.acquired_counters[item_id] = PNCounter(item_id)
             self.acquired_counters[item_id].merge(replica.acquired_counters[item_id])
+
+        return self
