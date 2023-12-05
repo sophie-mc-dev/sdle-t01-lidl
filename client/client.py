@@ -99,6 +99,9 @@ while True:
         # Read client's shopping list
         items_str = ""
 
+        for item in client_list[user_id].shopping_map.items():
+            items_str += str(item[1]['name']) + ':' + str(item[1]['quantity']) + ':' + str(item[1]['acquired']) + '\n'
+
         if items_str != "":
 
             # Send client list items to server

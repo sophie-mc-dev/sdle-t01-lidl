@@ -2,7 +2,6 @@ import socket
 import threading
 import signal
 import sys
-import uuid
 from os.path import dirname, abspath
 from shared.utils import *
 from shared.CRDT import *
@@ -40,9 +39,9 @@ def handle_client(client_socket):
             to_send = "No active shooping lists.\n"
 
             # Create ShoppingList object
-            shopping_list = ShoppingList()
-            list_id = shopping_list.my_id()
-            shopping_list.associate_user(user_id) # User is stored in the shopping list's self.Users 
+            list = ShoppingList()
+            shopping_list_items = list.shopping_map.items()
+            list_id = list.my_id()
             user_list[user_id] = list_id
 
             # Save clients lists
@@ -50,7 +49,7 @@ def handle_client(client_socket):
                 for user_id, lists_IDs in user_list.items():
                     file.write(f"{user_id}:{lists_IDs}\n")
 
-            client_list[list_id] = shopping_list
+            client_list[list_id] = shopping_list_items
 
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
@@ -63,7 +62,7 @@ def handle_client(client_socket):
             if option == "1":
                 to_send = "Create new shopping list"
 
-                 # Create ShoppingList object
+                # Create ShoppingList object
                 shopping_list = ShoppingList()
                 list_id = shopping_list.my_id()
                 user_list[user_id] = list_id
@@ -76,7 +75,7 @@ def handle_client(client_socket):
 
                 # get all the lists available
                 available_lists = []
-                for user_name, lists_IDs in user_list.items():
+                for lists_IDs in user_list.items():
                     try:
                         lists_IDs = lists_IDs.strip().split(',')
                         for listID in lists_IDs:
@@ -125,23 +124,23 @@ def handle_client(client_socket):
         client_socket.send("Show menu.\n".encode())
 
         encoded_client_items = client_socket.recv(1024).decode().strip()
+        print(encoded_client_items)
         
         if "noContent" in encoded_client_items:
             client_socket.send("No sync".encode())
         
         else: # Synchronization logic
-            list_id = client_list[list_id].my_id()
 
-            # GET SERVER LIST
-            server_shopping_list = client_list[list_id]
+            # SERVER LIST = client_list[list_id]
 
             # Get CLIENT list from client socket
             client_shoppint_list = encoded_client_items.split('\n')
+            print("client list", client_shoppint_list)
             
             # MERGE SHOPPING LIST REPLICAS
-            merged_list = server_shopping_list.merge(client_shoppint_list)
+            merged_list = client_list[list_id].merge(client_shoppint_list)
 
-            server_shopping_list = ShoppingList() # clears server shopping list
+            client_list[list_id] = ShoppingList() # clears server shopping list
 
             for item_id, i in merged_list.shopping_map.items():
                 item['name'], item['quantity'], item['acquired'], item['timestamp'] = i.strip().split(',')
@@ -149,13 +148,13 @@ def handle_client(client_socket):
 
             # Print the updated/merged list in the server
             print("\n=>> Updated server list '" + list_id + "':")
-            for item in server_shopping_list.shopping_map.items():
+            for item in client_list[list_id].shopping_map.items():
                 print(item.__str__())
             print("-------------------------\n")
 
             # Create a response string containing the updated list and sync success message
             response = ""
-            for item in server_shopping_list.shopping_map.items():
+            for item in client_list[list_id].shopping_map.items():
                 response += item['name'] + ':' + str(item['quantity']) + ':' + str(item['acquired']) + '\n'
 
             response += "Syncronization done with success.\n"
