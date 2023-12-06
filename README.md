@@ -7,7 +7,7 @@
 Before running the application, you must:
 
 - delete all the files from shopping_lists and clients_lists
-- clean the content of user_listsIDs.txt found in the database folder
+- clean the content of active_lists_file.txt found in the database folder
 
 To do this, run the following command on the main project directory:
 

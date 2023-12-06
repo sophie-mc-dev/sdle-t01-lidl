@@ -2,7 +2,7 @@
 # ./run_server.bat
 
 clean_file:
-	type NUL > database\server_data\user_listsIDs.txt
+	type NUL > database\server_data\active_lists_file.txt
 
 clean_folders:
 	del database\server_data\shopping_lists\* /Q

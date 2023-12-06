@@ -35,18 +35,18 @@ def handle_client(client_socket):
 
     while not listed:
 
-        if len(user_list) == 0:
+        if len(active_lists) == 0:
             to_send = "No active shooping lists.\n"
 
             # Create ShoppingList object
             shopping_list = ShoppingList()
             list_id = shopping_list.my_id()
-            user_list[user_id] = list_id
+            active_lists.append(list_id)
 
             # Save clients lists
-            with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
-                for user_id, lists_IDs in user_list.items():
-                    file.write(f"{user_id}:{lists_IDs}\n")
+            with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
+                for listID in active_lists:
+                    file.write(f"{listID}\n")
 
             local_list[list_id] = shopping_list
 
@@ -64,12 +64,13 @@ def handle_client(client_socket):
                 # Create ShoppingList object
                 shopping_list = ShoppingList()
                 list_id = shopping_list.my_id()
-                user_list[user_id] = list_id
+                active_lists.append(list_id)
+
 
                 # Save clients lists
-                with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
-                    for user_id, lists_IDs in user_list.items():
-                        file.write(f"{user_id}:{lists_IDs}\n")
+                with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
+                    for listID in active_lists:
+                        file.write(f"{listID}\n")
 
                 local_list[list_id] = shopping_list
 
@@ -81,28 +82,20 @@ def handle_client(client_socket):
                 to_send = "\nChoose one list ID:\n"
 
                 # get all the lists available
-                available_lists = []
-                for item in user_list.items():
-                    available_lists.append(item[1])
-
-                available_lists = list(set(available_lists))
-
                 idx = 1
-                for list_id in available_lists:
+                for list_id in active_lists:
                     to_send += str(idx) + " - " + str(list_id) + "\n"
                     idx = idx + 1
 
                 client_socket.send(to_send.encode())
                 option = client_socket.recv(1024).decode().strip()
 
-                user_list[user_id] = available_lists[int(option) - 1]
+                list_id = active_lists[int(option) - 1]
+                active_lists.append(list_id)
 
-                with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
-                    for user_id, list_id in user_list.items():
-                        file.write(f"{user_id}:{list_id}\n")
-
-                list_id = user_list[user_id]
-
+                with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
+                    for listID in active_lists:
+                        file.write(f"{listID}\n")
 
                 if local_list[list_id].is_empty():
                     client_socket.send("empty_list".encode())

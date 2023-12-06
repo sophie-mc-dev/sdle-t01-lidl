@@ -16,30 +16,19 @@ db_dir = parent_dir + "/database"
 #  - is a dictionary used for local storage of shopping lists, (simulated as an in-memory data structure)
 local_list = {}
 
-# Credentials
-user_credentials = {}
-
 # User lists
-user_list = {}
+active_lists = []
 
 
 
 # ----------------------------- Fetch data -----------------------------
 
-try: # Credentials
-    with open(db_dir + "/server_data/user_credentials.txt", 'r') as file:
-        for line in file:
-            user_id, password = line.strip().split(':')
-            user_credentials[user_id] = password
-except FileNotFoundError:
-    pass
-
 try: # User lists
-    with open(db_dir + "/server_data/user_listsIDs.txt", 'r') as file:
-        for line in file:
-            user_id, lists_IDs = line.strip().split(':')
-            lists_IDs = line.strip().split(',')
-            user_list[user_id] = lists_IDs
+    with open(db_dir + "/server_data/active_lists_file.txt", 'r') as file:
+        for listID in file:
+            #user_id, lists_IDs = line.strip().split(':')
+            #lists_IDs = line.strip().split(',')
+            active_lists.append(listID)
 except FileNotFoundError:
     pass
 
