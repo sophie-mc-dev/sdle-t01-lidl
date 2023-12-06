@@ -168,8 +168,6 @@ class ShoppingList:
         # Determine common items between the two sets
         common_items = self_item_ids.intersection(replica_item_ids)
 
-        print("common_items: ", common_items)
-
         # Handle conflicts based on timestamps, quantities and acquired status
         for item_id in common_items:
             self_item = self.shopping_map[item_id]

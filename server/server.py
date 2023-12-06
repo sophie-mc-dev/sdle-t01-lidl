@@ -147,24 +147,20 @@ def handle_client(client_socket):
 
                 client_shoppint_list.add_item(item_id, item)
 
-
-            #print("client list", client_shoppint_list.shopping_map)
-            #print("server list", local_list[list_id].shopping_map)
-
             
             # MERGE SHOPPING LIST REPLICAS
-            merged_list = local_list[list_id].merge(client_shoppint_list)
+            merged_list = {}
+            merged_list[list_id] = local_list[list_id].merge(client_shoppint_list)
 
-            local_list[list_id] = ShoppingList() # clears server shopping list
+            print("\n_______merged list_________")
+            for item in merged_list[list_id].shopping_map.items():
+                print(item.__str__())
+            print("___________________________\n")
 
-            print("merged list_________________")
-            print(merged_list.shopping_map.items())
-            #for key, value in merged_list.shopping_map.items():
-            #    item['name'], item['quantity'], item['acquired'], item['timestamp'] = i.strip().split(',')
-            #    local_list[list_id].add_item(item_id, item)
+            for item_id, item in list(merged_list[list_id].shopping_map.items()):
+                local_list[list_id].add_item(item_id, item)
 
             # Print the updated/merged list in the server
-            local_list[list_id] = merged_list
             print("\n=>> Updated server list '" + list_id + "':")
             for item in local_list[list_id].shopping_map.items():
                 print(item.__str__())
