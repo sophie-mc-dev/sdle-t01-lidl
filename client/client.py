@@ -27,12 +27,10 @@ while not listed:
 
     if "No active shooping lists." in message:
         print("There are no active shooping lists. Let's create one for you.\n")
-
-        # Create a new shopping list
-        local_list[user_id] = ShoppingList()
-        list_id = local_list[user_id].my_id()
-
-        print(f"Your list id is '{list_id}'.")
+        
+        # Create ShoppingList object
+        shopping_list = ShoppingList()
+        local_list[user_id] = shopping_list
 
     elif "There already are active shooping lists" in message:
         print("1 - Create a new shopping list")
@@ -46,23 +44,21 @@ while not listed:
         if "Create new shopping list" in message: # option 1
             print("Let's create a new shopping list.\n")
 
-            # Create a new shopping list
-            local_list[user_id] = ShoppingList()
-            list_id = local_list[user_id].my_id()
-
-            print(f"You are associated to list id '{list_id}'.")
+            # Create ShoppingList object
+            shopping_list = ShoppingList()
+            local_list[user_id] = shopping_list
 
         elif "Choose one list ID" in message: # option 2
-            print(message)
+            print(message) # Available lists to choose
 
             chosen_list_id = input("List ID: ")
             client_socket.send(chosen_list_id.encode())
 
+            # Create ShoppingList object
+            shopping_list = ShoppingList()
+            local_list[user_id] = shopping_list
+
             message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
-            list_id = extract_list_id(message)
-            print("---list_id:")
-            print(list_id)
-            local_list[user_id] = ShoppingList()
 
 
             client_socket.send("Has content?".encode())
@@ -75,15 +71,22 @@ while not listed:
                 list = message.split('\n')
 
                 # Add '\n' to the end of each element in the list
-                items = [item + '\n' for item in list]
+                items = [item for item in list if item != ""]
                 # 'items' contains the items from local client union with server items
 
-                for item in items:
-                    item_name, quantity, acquired = item.strip().split(':')
-                    # local_list[user_id].add_item(item_id, item)
-            
-            print(f"You are associated to list id '{list_id}'.")
+                for line in items:
+                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
+                    item = {
+                        "name": item_name,
+                        "quantity": item_quantity,
+                        "acquired": item_acquired,
+                        "timestamp": item_timestamp
+                    }
+
+                    local_list[user_id].add_item(item_id, item)
+
+            
     listed = True
     
 

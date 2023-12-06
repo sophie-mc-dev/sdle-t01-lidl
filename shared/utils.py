@@ -47,31 +47,12 @@ except FileNotFoundError:
 
 # ----------------------------- Auxiliar functions -----------------------------
 
-# extracts listID from server message
-def extract_list_id(message):
-    start_index = message.find("Your list id is '")
-
-    if start_index != -1:
-        end_index = message.find("'", start_index + len("Your list id is '"))
-
-        if end_index != -1:
-            list_id = message[start_index + len("Your list id is '"):end_index]
-            return list_id
-        else:
-            print("Closing single quote not found.")
-    else:
-        print("Message format not recognized.")
-    return None
-
 # prints current client local list
 # function only called by the client
 def print_user_list(user_id):
     print(f"\n> Your List content:")
-    list_id = local_list[user_id].my_id()
-    print(f"Shopping List ID: {list_id}")
-
     print("Items: ")
-    if not local_list[user_id].shopping_map.items():
+    if local_list[user_id].is_empty():
         print("Oops... Looks like you have no items yet.")
     else:
         for item_id, item in local_list[user_id].shopping_map.items():
