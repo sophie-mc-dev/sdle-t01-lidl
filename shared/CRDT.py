@@ -164,16 +164,34 @@ class ShoppingList:
 
     def merge(self, replica):
         # Extract item IDs from the current instance and the replica
-        self_item_ids = set(self.shopping_map.keys())
-        replica_item_ids = set(replica.shopping_map.keys())
+        self_items_dict = self.shopping_map.values()
+        replica_items_dict = replica.shopping_map.values()
+
+        self_items_names = []
+        replica_items_names = []
+
+        for my_dict in self_items_dict:
+            self_items_names.append(my_dict['name'])
+        for my_dict in replica_items_dict:
+            replica_items_names.append(my_dict['name'])
+
 
         # Determine common items between the two sets
-        common_items = self_item_ids.intersection(replica_item_ids)
+        common_items = list(set(self_items_names).intersection(set(replica_items_names)))
 
         # Handle conflicts based on timestamps, quantities and acquired status
-        for item_id in common_items:
-            self_item = self.shopping_map[item_id]
-            replica_item = replica.shopping_map[item_id]
+        for item_name in common_items:
+
+            for item_id, item in self.shopping_map.items():
+                if (item_name == item['name']):
+                    self_item = item
+                    self_id = item_id
+
+            for item_id, item in replica.shopping_map.items():
+                if (item_name == item['name']):
+                    replica_item = item
+                    replica_id = item_id
+
 
             # If replica's item modification is more recent
             if replica_item["timestamp"] > self_item["timestamp"]:
@@ -185,22 +203,32 @@ class ShoppingList:
                         pass
                     else:
                         # Update with the acquired status from other_item
-                        self.shopping_map[item_id]["acquired"] = replica_item["acquired"]
+                        self.shopping_map[self_id]["acquired"] = replica.shopping_map[replica_id]["acquired"]
                 
                 else:
                     # Check for conflicts in quantities
                     if replica_item["quantity"] != self_item["quantity"]:
                         # Handle quantity conflict (with sum of quantities)
-                        self.shopping_map[item_id]["quantity"] = sum(self_item["quantity"], replica_item["quantity"])
+                        self.shopping_map[self_id]["quantity"] = sum(self.shopping_map[self_id]["quantity"], replica.shopping_map[replica_id]["quantity"])
                     else:
                         # No conflicts in quantity or acquired status, update with the latest timestamp
-                        self.shopping_map[item_id] = replica_item
+                        self.shopping_map[self_id] = replica_item
+
 
         # Merge items from replica into self.shopping_map
-        for item_id in replica_item_ids:
-            if item_id not in self_item_ids:
-                self.shopping_map[item_id] = replica.shopping_map[item_id]
-        
+        for item_name in replica_items_names:
+            if item_name not in self_items_names:
+
+                for item_id, item in replica.shopping_map.items():
+                    if (item_name == item['name']):
+                        replica_item = item
+                        replica_id = item_id
+
+                self.shopping_map[replica_id] = replica.shopping_map[replica_id]
+
+
+        # TODO -> A partir daqui não mudei nada
+
         # Merge quantity counters and acquired counters
         for item_id in replica.quantity_counters:
             if item_id not in self.quantity_counters:
@@ -211,5 +239,6 @@ class ShoppingList:
             if item_id not in self.acquired_counters:
                 self.acquired_counters[item_id] = PNCounter(item_id)
             self.acquired_counters[item_id].merge(replica.acquired_counters[item_id])
+
 
         return self
