@@ -142,9 +142,8 @@ def handle_client(client_socket):
 
             
             # MERGE SHOPPING LIST REPLICAS
-            merged_list = {}
             local_list[list_id] = local_list[list_id].merge(client_shoppint_list)
-            
+
 
             # Print the updated/merged list in the server
             print("\n=>> Updated server list '" + list_id + "':")

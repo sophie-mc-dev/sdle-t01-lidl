@@ -209,7 +209,7 @@ class ShoppingList:
                     # Check for conflicts in quantities
                     if replica_item["quantity"] != self_item["quantity"]:
                         # Handle quantity conflict (with sum of quantities)
-                        self.shopping_map[self_id]["quantity"] = sum(self.shopping_map[self_id]["quantity"], replica.shopping_map[replica_id]["quantity"])
+                        self.shopping_map[self_id]["quantity"] = int(self.shopping_map[self_id]["quantity"]) + int(replica.shopping_map[replica_id]["quantity"])
                     else:
                         # No conflicts in quantity or acquired status, update with the latest timestamp
                         self.shopping_map[self_id] = replica_item
