@@ -14,7 +14,7 @@ db_dir = parent_dir + "/database"
 
 # Local storage:
 #  - is a dictionary used for local storage of shopping lists, (simulated as an in-memory data structure)
-client_list = {}
+local_list = {}
 
 # Credentials
 user_credentials = {}
@@ -67,13 +67,13 @@ def extract_list_id(message):
 # function only called by the client
 def print_user_list(user_id):
     print(f"\n> Your List content:")
-    list_id = client_list[user_id].my_id()
+    list_id = local_list[user_id].my_id()
     print(f"Shopping List ID: {list_id}")
 
     print("Items: ")
-    if not client_list[user_id].shopping_map.items():
+    if not local_list[user_id].shopping_map.items():
         print("Oops... Looks like you have no items yet.")
     else:
-        for item_id, item in client_list[user_id].shopping_map.items():
+        for item_id, item in local_list[user_id].shopping_map.items():
             print(f" Item ID: {item_id}, Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
     print("------------------------------\n")

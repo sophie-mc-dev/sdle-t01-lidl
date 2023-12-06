@@ -29,8 +29,8 @@ while not listed:
         print("There are no active shooping lists. Let's create one for you.\n")
 
         # Create a new shopping list
-        client_list[user_id] = ShoppingList()
-        list_id = client_list[user_id].my_id()
+        local_list[user_id] = ShoppingList()
+        list_id = local_list[user_id].my_id()
 
         print(f"Your list id is '{list_id}'.")
 
@@ -47,8 +47,8 @@ while not listed:
             print("Let's create a new shopping list.\n")
 
             # Create a new shopping list
-            client_list[user_id] = ShoppingList()
-            list_id = client_list[user_id].my_id()
+            local_list[user_id] = ShoppingList()
+            list_id = local_list[user_id].my_id()
 
             print(f"You are associated to list id '{list_id}'.")
 
@@ -62,7 +62,7 @@ while not listed:
             list_id = extract_list_id(message)
             print("---list_id:")
             print(list_id)
-            client_list[user_id] = ShoppingList()
+            local_list[user_id] = ShoppingList()
 
 
             client_socket.send("Has content?".encode())
@@ -80,7 +80,7 @@ while not listed:
 
                 for item in items:
                     item_name, quantity, acquired = item.strip().split(':')
-                    # client_list[user_id].add_item(item_id, item)
+                    # local_list[user_id].add_item(item_id, item)
             
             print(f"You are associated to list id '{list_id}'.")
 
@@ -99,7 +99,7 @@ while True:
         # Read client's shopping list
         items_str = ""
 
-        for item_id, item in client_list[user_id].shopping_map.items():
+        for item_id, item in local_list[user_id].shopping_map.items():
             items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
 
         if items_str != "":
@@ -124,7 +124,7 @@ while True:
             items = [item + '\n' for item in list_plus_message]
             # 'items' contains the items from local client union with server items
 
-            client_list[user_id] = ShoppingList() # clear client shopping list
+            local_list[user_id] = ShoppingList() # clear client shopping list
             for line in items:
                 item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
@@ -135,7 +135,7 @@ while True:
                     "timestamp": item_timestamp
                 }
 
-                client_list[user_id].add_item(item_id, item)
+                local_list[user_id].add_item(item_id, item)
 
 
         else:
@@ -176,7 +176,7 @@ while True:
 
                 try:
                     item["quantity"] = int(item["quantity"])
-                    client_list[user_id].add_item(item_id, item)
+                    local_list[user_id].add_item(item_id, item)
                     print_user_list(user_id)
                 except ValueError:
                     print("Quantity must be an integer.")
@@ -184,7 +184,7 @@ while True:
             elif key == "2": 
                 is_empty = True
 
-                for item in client_list[user_id].shopping_map.items():
+                for item in local_list[user_id].shopping_map.items():
                     is_empty = False
                     print(item.__str__())
 
@@ -192,31 +192,31 @@ while True:
                     print("\nYou have no items to delete.\n")
                 else:
                     item_to_remove = input("> Enter ID of the item to remove: ")
-                    client_list[user_id].remove_item(item_to_remove)
+                    local_list[user_id].remove_item(item_to_remove)
                     print("Item removed successfully.")
                     print_user_list(user_id)
                 
             elif key == "3":
                 item_to_update = input("> Enter ID of the item to remove: ")
-                client_list[user_id].increment_quantity(item_to_update)
+                local_list[user_id].increment_quantity(item_to_update)
                 print("Quantity incremented successfully.")
                 print_user_list(user_id)
 
             elif key == "4":
                 item_to_update = input("> Enter ID of the item to remove: ")
-                client_list[user_id].decrement_quantity(item_to_update)
+                local_list[user_id].decrement_quantity(item_to_update)
                 print("Quantity incremented successfully.")
                 print_user_list(user_id) 
 
             elif key == "5":
                 item_to_update = input("Enter ID of the item to update status: ")
-                client_list[user_id].update_acquired_status(item_to_update, True)
+                local_list[user_id].update_acquired_status(item_to_update, True)
                 print("Acquired status updated successfully.")
                 print_user_list(user_id) 
 
             elif key == "6":
                 item_to_update = input("Enter ID of the item to update status: ")
-                client_list[user_id].update_acquired_status(item_to_update, False)
+                local_list[user_id].update_acquired_status(item_to_update, False)
                 print("Acquired status updated successfully.")
                 print_user_list(user_id) 
 

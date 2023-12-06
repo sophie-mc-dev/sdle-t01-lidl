@@ -39,13 +39,8 @@ def handle_client(client_socket):
             to_send = "No active shooping lists.\n"
 
             # Create ShoppingList object
-            list = ShoppingList()
-            list_id = list.my_id()
-
-            print("--   listtt:")
-            print(list.get_shopping_list(list_id))
-
-            #shopping_list_items = list.shopping_map.items()
+            shopping_list = ShoppingList()
+            list_id = shopping_list.my_id()
             user_list[user_id] = list_id
 
             # Save clients lists
@@ -53,7 +48,7 @@ def handle_client(client_socket):
                 for user_id, lists_IDs in user_list.items():
                     file.write(f"{user_id}:{lists_IDs}\n")
 
-            client_list[list_id] = list
+            local_list[list_id] = shopping_list
 
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
@@ -71,21 +66,24 @@ def handle_client(client_socket):
                 list_id = shopping_list.my_id()
                 user_list[user_id] = list_id
 
+                # Save clients lists
+                with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
+                    for user_id, lists_IDs in user_list.items():
+                        file.write(f"{user_id}:{lists_IDs}\n")
+
+                local_list[list_id] = shopping_list
+
                 to_send = to_send + "Your list id is '" + list_id + "'."
                 client_socket.send(to_send.encode()) 
+
 
             elif option == "2":                
                 to_send = "\nChoose one list ID:\n"
 
                 # get all the lists available
                 available_lists = []
-                for lists_IDs in user_list.items():
-                    try:
-                        lists_IDs = lists_IDs.strip().split(',')
-                        for listID in lists_IDs:
-                            available_lists.append(listID)
-                    except:
-                        available_lists.append(lists_IDs)
+                for item in user_list.items():
+                    available_lists.append(item[1])
 
                 available_lists = list(set(available_lists))
 
@@ -98,6 +96,7 @@ def handle_client(client_socket):
                 option = client_socket.recv(1024).decode().strip()
 
                 user_list[user_id] = available_lists[int(option) - 1]
+
                 with open(db_dir + "/server_data/user_listsIDs.txt", 'w') as file:
                     for user_id, list_id in user_list.items():
                         file.write(f"{user_id}:{list_id}\n")
@@ -108,16 +107,14 @@ def handle_client(client_socket):
                 client_socket.send(to_send.encode())
 
                 message = client_socket.recv(1024).decode() # needed just to messages logic work
-                if client_list[list_id].is_empty():
+                if local_list[list_id].is_empty():
                     client_socket.send("empty_list".encode())
                 else:
-                    server_items = []
-                    for item in client_list[list_id].shopping_map.items():
-                        item_str = item.name + ':' + str(item.quantity) + ':' + str(item.acquired)
-                        server_items.append(item_str)
-                    # 'server_items' contains the server items
+                    response = ""    # server local items
+                    for item_id, item in local_list[list_id].shopping_map.items():
+                        response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
 
-                    client_socket.send('\n'.join(server_items).encode())                    
+                    client_socket.send(response.encode())                    
                         
 
         listed = True
@@ -135,7 +132,7 @@ def handle_client(client_socket):
         
         else: # Synchronization logic
 
-            # SERVER LIST = client_list[list_id]
+            # SERVER LIST = local_list[list_id]
 
             # Get CLIENT list from client socket
             client_shoppint_list_items = encoded_client_items.split('\n')
@@ -156,30 +153,30 @@ def handle_client(client_socket):
 
 
             print("client list", client_shoppint_list.shopping_map)
-            print("server list", client_list[list_id].shopping_map)
+            print("server list", local_list[list_id].shopping_map)
 
             
             # MERGE SHOPPING LIST REPLICAS
-            merged_list = client_list[list_id].merge(client_shoppint_list)
+            merged_list = local_list[list_id].merge(client_shoppint_list)
 
-            client_list[list_id] = ShoppingList() # clears server shopping list
+            local_list[list_id] = ShoppingList() # clears server shopping list
 
             print("merged list_________________")
             print(merged_list.shopping_map.items())
             #for key, value in merged_list.shopping_map.items():
             #    item['name'], item['quantity'], item['acquired'], item['timestamp'] = i.strip().split(',')
-            #    client_list[list_id].add_item(item_id, item)
+            #    local_list[list_id].add_item(item_id, item)
 
             # Print the updated/merged list in the server
-            client_list[list_id] = merged_list
+            local_list[list_id] = merged_list
             print("\n=>> Updated server list '" + list_id + "':")
-            for item in client_list[list_id].shopping_map.items():
+            for item in local_list[list_id].shopping_map.items():
                 print(item.__str__())
             print("-------------------------\n")
 
             # Create a response string containing the updated list and sync success message
             response = ""
-            for item_id, item in client_list[list_id].shopping_map.items():
+            for item_id, item in local_list[list_id].shopping_map.items():
                 response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
 
             response += "Syncronization done with success.\n"

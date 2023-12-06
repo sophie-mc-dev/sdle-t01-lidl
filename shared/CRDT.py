@@ -20,6 +20,10 @@ class ShoppingList:
         """Returns the ID of the shopping list."""
         return self.id
 
+    def is_empty(self):
+        """Returns True if shopping list is empty, or False otherwise"""
+        return self.shopping_map == {}
+
     def delete_list(self, id):
         """Deletes the shopping list identified by the provided list_id."""
         if id == self.id:
