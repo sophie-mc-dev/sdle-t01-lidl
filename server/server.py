@@ -103,10 +103,7 @@ def handle_client(client_socket):
 
                 list_id = user_list[user_id]
 
-                to_send = "Your list id is '" + list_id + "'."
-                client_socket.send(to_send.encode())
 
-                message = client_socket.recv(1024).decode() # needed just to messages logic work
                 if local_list[list_id].is_empty():
                     client_socket.send("empty_list".encode())
                 else:
@@ -119,13 +116,12 @@ def handle_client(client_socket):
 
         listed = True
         
-    print("User '", user_id, "' is associated with shopping list '", list_id, "'")
+    #print("User '", user_id, "' is associated with shopping list '", list_id, "'")
 
     while True:
         client_socket.send("Show menu.\n".encode())
 
         encoded_client_items = client_socket.recv(1024).decode().strip()
-        print(encoded_client_items)
         
         if "noContent" in encoded_client_items:
             client_socket.send("No sync".encode())
@@ -152,8 +148,8 @@ def handle_client(client_socket):
                 client_shoppint_list.add_item(item_id, item)
 
 
-            print("client list", client_shoppint_list.shopping_map)
-            print("server list", local_list[list_id].shopping_map)
+            #print("client list", client_shoppint_list.shopping_map)
+            #print("server list", local_list[list_id].shopping_map)
 
             
             # MERGE SHOPPING LIST REPLICAS

@@ -50,7 +50,6 @@ while not listed:
 
         elif "Choose one list ID" in message: # option 2
             print(message) # Available lists to choose
-
             chosen_list_id = input("List ID: ")
             client_socket.send(chosen_list_id.encode())
 
@@ -58,21 +57,13 @@ while not listed:
             shopping_list = ShoppingList()
             local_list[user_id] = shopping_list
 
-            message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
-
-
-            client_socket.send("Has content?".encode())
-            # create a personal shopping list (copy from the original),
-            # this list is not shared with anybody
+            # fill client local list with the server list content
             message = client_socket.recv(1024).decode()
 
             if "empty_list" not in message:
                 # Split the received data using '\n' as the separator and store it in a list
                 list = message.split('\n')
-
-                # Add '\n' to the end of each element in the list
                 items = [item for item in list if item != ""]
-                # 'items' contains the items from local client union with server items
 
                 for line in items:
                     item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
@@ -112,8 +103,6 @@ while True:
 
             # Receive new items list and update client list
             encoded_list_plus_message = client_socket.recv(1024).decode().strip()
-            print("after server synccc_________________")
-            print(encoded_list_plus_message)
 
             # Split the received data using '\n' as the separator and store it in a list
             list_plus_message = encoded_list_plus_message.split('\n')
