@@ -120,7 +120,8 @@ class ShoppingList:
             # Generate the vector clock timestamp for the increment operation
             self.v[list_id] += 1
 
-            self.shopping_map[item_id]["quantity"] += 1
+            updated_quantity = int(self.shopping_map[item_id]["quantity"]) + 1
+            self.shopping_map[item_id]["quantity"] = updated_quantity
             self.shopping_map[item_id]["timestamp"] = self.v[list_id]
 
             self.quantity_counters[item_id].inc(item_id)

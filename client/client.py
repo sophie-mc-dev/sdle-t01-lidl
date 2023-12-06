@@ -189,28 +189,65 @@ while True:
                     print_user_list(user_id)
                 
             elif key == "3":
-                item_to_update = input("> Enter ID of the item to remove: ")
-                local_list[user_id].increment_quantity(item_to_update)
-                print("Quantity incremented successfully.")
-                print_user_list(user_id)
+                is_empty = True
+
+                for item in local_list[user_id].shopping_map.items():
+                    is_empty = False
+                    print(item.__str__())
+
+                if is_empty:
+                    print("\nYou have no items to increment.\n")
+                else:
+                    item_to_increment = input("> Enter ID of the item to increment: ")
+                    local_list[user_id].increment_quantity(item_to_increment)
+                    print("Item quantity incremented successfully.")
+                    print_user_list(user_id)
 
             elif key == "4":
-                item_to_update = input("> Enter ID of the item to remove: ")
-                local_list[user_id].decrement_quantity(item_to_update)
-                print("Quantity incremented successfully.")
-                print_user_list(user_id) 
+                is_empty = True
+
+                for item in local_list[user_id].shopping_map.items():
+                    is_empty = False
+                    print(item.__str__())
+
+                if is_empty:
+                    print("\nYou have no items to decrement.\n")
+                else:
+                    item_to_decrement = input("> Enter ID of the item to decrement: ")
+                    local_list[user_id].decrement_quantity(item_to_decrement)
+                    print("Item quantity decremented successfully.")
+                    print_user_list(user_id)
 
             elif key == "5":
-                item_to_update = input("Enter ID of the item to update status: ")
-                local_list[user_id].update_acquired_status(item_to_update, True)
-                print("Acquired status updated successfully.")
-                print_user_list(user_id) 
+                is_empty = True
+
+                for item in local_list[user_id].shopping_map.items():
+                    is_empty = False
+                    print(item.__str__())
+
+                if is_empty:
+                    print("\nYou have no items to decrement.\n")
+                else:
+                    item_to_update = input("> Enter ID of the item to update status: ")
+                    local_list[user_id].update_acquired_status(item_to_update, True)
+                    print("Acquired status updated successfully.")
+                    print_user_list(user_id)
 
             elif key == "6":
-                item_to_update = input("Enter ID of the item to update status: ")
-                local_list[user_id].update_acquired_status(item_to_update, False)
-                print("Acquired status updated successfully.")
-                print_user_list(user_id) 
+
+                is_empty = True
+
+                for item in local_list[user_id].shopping_map.items():
+                    is_empty = False
+                    print(item.__str__())
+
+                if is_empty:
+                    print("\nYou have no items to decrement.\n")
+                else:
+                    item_to_update = input("> Enter ID of the item to update status: ")
+                    local_list[user_id].update_acquired_status(item_to_update, False)
+                    print("Acquired status updated successfully.")
+                    print_user_list(user_id) 
 
             elif key == "0":
                 print("End of connection.\n")
