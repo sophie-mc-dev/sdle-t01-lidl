@@ -125,21 +125,33 @@ def handle_client(client_socket):
 
             # Get CLIENT list from client socket
             client_shoppint_list_items = encoded_client_items.split('\n')
+            print("- string received:")
+            print(client_shoppint_list_items)
             
             # create shopping list object for client content
             client_shoppint_list = ShoppingList()
             for line in client_shoppint_list_items:
-                item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+                try:
+                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
-                item = {
-                    "name": item_name,
-                    "quantity": item_quantity,
-                    "acquired": item_acquired,
-                    "timestamp": item_timestamp
-                }
+                    item = {
+                        "name": item_name,
+                        "quantity": item_quantity,
+                        "acquired": item_acquired,
+                        "timestamp": item_timestamp
+                    }
 
-                client_shoppint_list.add_item(item_id, item)
+                    print("****** ITEM *******")
+                    print(item['name'])
+                    print(item['quantity'])
+                    print(item['acquired'])
+                    print(item['timestamp'])
 
+
+                    client_shoppint_list.fill_with_item(item_id, item)
+
+                except:
+                    continue
             
             # MERGE SHOPPING LIST REPLICAS
             local_list[list_id] = local_list[list_id].merge(client_shoppint_list)
@@ -154,7 +166,8 @@ def handle_client(client_socket):
             # Create a response string containing the updated list and sync success message
             response = ""
             for item_id, item in local_list[list_id].shopping_map.items():
-                response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
+                response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'  
+
 
             response += "Syncronization done with success.\n"
 

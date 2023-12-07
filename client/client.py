@@ -103,6 +103,9 @@ while True:
 
             # Receive new items list and update client list
             encoded_list_plus_message = client_socket.recv(1024).decode().strip()
+            print(">>> encoded_list_plus_message:")
+            print(encoded_list_plus_message)       
+
 
             # Split the received data using '\n' as the separator and store it in a list
             list_plus_message = encoded_list_plus_message.split('\n')
@@ -118,16 +121,20 @@ while True:
 
             local_list[user_id] = ShoppingList() # clear client shopping list
             for line in items:
-                item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+                try:
+                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
-                item = {
-                    "name": item_name,
-                    "quantity": item_quantity,
-                    "acquired": item_acquired,
-                    "timestamp": item_timestamp
-                }
+                    item = {
+                        "name": item_name,
+                        "quantity": item_quantity,
+                        "acquired": item_acquired,
+                        "timestamp": item_timestamp
+                    }
 
-                local_list[user_id].add_item(item_id, item)
+                    local_list[user_id].fill_with_item(item_id, item)
+
+                except:
+                    continue
 
 
         else:
