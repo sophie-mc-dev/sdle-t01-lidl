@@ -2,7 +2,6 @@ import sys
 from os.path import dirname, abspath
 import urllib.parse
 import os
-
 from shared.CRDT import ShoppingList
 
 parent_dir = dirname(dirname(abspath(__file__)))
@@ -25,7 +24,7 @@ active_lists = []
 
 # Active shopping lists
 try: 
-    with open(db_dir + "/server_data/active_lists_file.txt", 'r') as file:
+    with open(db_dir + "/active_lists_file.txt", 'r') as file:
         for list_id in file:
             list_id = list_id.strip()  # Removes '\n'
             active_lists.append(list_id)
@@ -40,7 +39,7 @@ try:
         shopping_list = ShoppingList()
         shopping_list.set_id(list_id)
 
-        with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
+        with open(db_dir + "/shopping_lists/" + list_id + ".txt", 'r') as file:
             for line in file:
                 line = line.strip()
                 item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')

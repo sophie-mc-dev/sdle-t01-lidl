@@ -81,7 +81,7 @@ def handle_client(client_socket):
         local_list[list_id] = shopping_list_from_client
 
         # Save clients lists
-        with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
+        with open(db_dir + "/active_lists_file.txt", 'w') as file:
             for list_id in active_lists:
                 file.write(list_id + '\n')
 
@@ -113,7 +113,7 @@ def handle_client(client_socket):
 
     # Save shopping list in the database
     try:
-        with open(db_dir + "/server_data/shopping_lists/" + list_id + '.txt', 'w') as file:
+        with open(db_dir + "/shopping_lists/" + list_id + '.txt', 'w') as file:
             for item_id, item in local_list[list_id].shopping_map.items():
                 file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
     except FileNotFoundError:

@@ -44,8 +44,6 @@ def connect_to_server():
 
 while True:
 
-    print("\n[ => LOCAL WORK ]")
-        
     # Show user list content
     print("\n------------ MENU ------------")
     print("> [After server sync]")

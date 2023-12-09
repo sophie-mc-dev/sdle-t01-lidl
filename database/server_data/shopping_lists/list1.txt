@@ -1,2 +1,0 @@
-6aa32c0c-9102-42d1-88e8-b146df68b3dc:apple:4:False:1
-07ad4158-1b5a-4923-824a-78a887d1b0fe:banana:5:False:3
