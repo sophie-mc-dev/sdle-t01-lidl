@@ -126,10 +126,20 @@ class ShoppingList:
             del self.quantity_counters[item_id]
             del self.acquired_counters[item_id]
 
-    def increment_quantity(self, item_id):
+    def get_item_id_by_name(self, item_name):
+        """
+        Get item ID based on item name
+        """
+        for item_id, item_data in self.shopping_map.items():
+            if item_data["name"] == item_name:
+                return item_id
+        return None
+
+    def increment_quantity(self, item_name):
         """
         Increments the quantity of the shopping list item
         """
+        item_id = self.get_item_id_by_name(item_name)  # Retrieve item ID by name
         if item_id in self.shopping_map:
             list_id = self.my_id()
             if list_id not in self.v:
@@ -144,10 +154,11 @@ class ShoppingList:
 
             self.quantity_counters[item_id].inc(item_id)
 
-    def decrement_quantity(self, item_id):
+    def decrement_quantity(self, item_name):
         """
         Decrements the quantity of the shopping list item
         """
+        item_id = self.get_item_id_by_name(item_name)  # Retrieve item ID by name
         if item_id in self.shopping_map and self.shopping_map[item_id]["quantity"] > 0:
             list_id = self.my_id()
             if list_id not in self.v:
@@ -162,10 +173,11 @@ class ShoppingList:
 
             self.quantity_counters[item_id].dec(item_id)
 
-    def update_acquired_status(self, item_id, status):
+    def update_acquired_status(self, item_name, status):
         """
         Sets the item as acquired or not acquired
         """
+        item_id = self.get_item_id_by_name(item_name)  # Retrieve item ID by name
         if item_id in self.shopping_map:
             list_id = self.my_id()
             if list_id not in self.v:
