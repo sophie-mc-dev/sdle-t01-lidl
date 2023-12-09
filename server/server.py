@@ -68,9 +68,14 @@ def handle_client(client_socket):
             print(item.__str__())
 
     list_exists = False
+    print("list ids.......")
     for id in active_lists:
+        print(id)
         if id == list_id:
             list_exists = True
+        
+    print(active_lists)
+
     
 
     if not list_exists: # a lista ainda não existe - criá-la de raiz     
