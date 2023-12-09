@@ -173,7 +173,21 @@ while True:
         time.sleep(2)
 
 
-# client is connected to server
+
+# --------------- client is connected to server ------------------
+# send content in local list, if any
+# Read client's shopping list
+items_str = ""
+
+for item_id, item in local_list[user_id].shopping_map.items():
+    items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
+
+if items_str != "":
+    # Send client list items to server
+    client_socket.send(items_str.encode())
+else:
+    client_socket.send("noContent".encode())
+
 user_id = client_socket.recv(1024).decode()
 file_path = db_dir + "/client_data/clients_lists/" + user_id + ".txt"
 clients_lists_dir = db_dir + "/client_data/clients_lists/"

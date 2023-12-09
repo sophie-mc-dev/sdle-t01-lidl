@@ -26,6 +26,9 @@ print("\nServer is listening...")
 # Function to handle a client
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
+    
+    encoded_client_items = client_socket.recv(1024).decode().strip()
+        
 
     # Create a random user id to identify the client
     user_id = "user-" + token_urlsafe(5)
@@ -49,6 +52,42 @@ def handle_client(client_socket):
                     file.write(f"{listID}\n")
 
             local_list[list_id] = shopping_list
+
+            if "noContent" in encoded_client_items:
+                client_socket.send("No sync".encode())
+            
+            else: # Synchronization logic
+
+                # SERVER LIST = local_list[list_id]
+
+                # Get CLIENT list from client socket
+                client_shoppint_list_items = encoded_client_items.split('\n')
+                print("- string received:")
+                print(client_shoppint_list_items)
+               
+                for line in client_shoppint_list_items:
+                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+
+                    item = {
+                        "name": item_name,
+                        "quantity": item_quantity,
+                        "acquired": item_acquired,
+                        "timestamp": item_timestamp
+                    }
+
+                    print("****** ITEM *******")
+                    print(item['name'])
+                    print(item['quantity'])
+                    print(item['acquired'])
+                    print(item['timestamp'])
+
+
+                    local_list[list_id].fill_with_item(item_id, item)
+
+
+            print("\n=>> INITIAL CONTENT OF SHOPPING LIST '" + list_id + "':")
+            for item in local_list[list_id].shopping_map.items():
+                print(item.__str__())
 
             to_send = to_send + "Your list id is '" + list_id + "'."
             client_socket.send(to_send.encode())
