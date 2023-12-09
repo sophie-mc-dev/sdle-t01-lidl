@@ -188,7 +188,9 @@ if items_str != "":
 else:
     client_socket.send("noContent".encode())
 
-user_id = client_socket.recv(1024).decode()
+
+
+user_id_2= client_socket.recv(1024).decode()
 file_path = db_dir + "/client_data/clients_lists/" + user_id + ".txt"
 clients_lists_dir = db_dir + "/client_data/clients_lists/"
 listed = False
@@ -200,8 +202,8 @@ while not listed:
         print("There are no active shooping lists. Let's create one for you.\n")
         
         # Create ShoppingList object
-        shopping_list = ShoppingList()
-        local_list[user_id] = shopping_list
+        #shopping_list = ShoppingList()
+        #local_list[user_id] = shopping_list
 
     elif "There already are active shooping lists" in message:
         print("1 - Create a new shopping list")
