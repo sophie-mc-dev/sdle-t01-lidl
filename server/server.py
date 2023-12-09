@@ -27,193 +27,93 @@ print("\nServer is listening...")
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
     
+    # Create ShoppingList object
+    shopping_list_from_client = ShoppingList()
+
+
+    # Get data from client socket
+
     encoded_client_items = client_socket.recv(1024).decode().strip()
+    client_shoppint_list_items = encoded_client_items.split('\n')
+    
+    for line in client_shoppint_list_items:
+        item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+
+        if item_id == "IDs":
+            user_id = item_quantity
+            list_id = item_timestamp
+            print("............... list_id")
+
+            print(list_id)
+            shopping_list_from_client.set_id(list_id)
+            continue
         
+        item = {
+            "name": item_name,
+            "quantity": item_quantity,
+            "acquired": item_acquired,
+            "timestamp": item_timestamp
+        }
 
-    # Create a random user id to identify the client
-    user_id = "user-" + token_urlsafe(5)
-    client_socket.send(user_id.encode())
+        print("\n****** ITEM *******")
+        print(item['name'])
+        print(item['quantity'])
+        print(item['acquired'])
+        print(item['timestamp'])
 
-    listed = False
-
-    while not listed:
-
-        if len(active_lists) == 0:
-            to_send = "No active shooping lists.\n"
-
-            # Create ShoppingList object
-            shopping_list = ShoppingList()
-            list_id = shopping_list.my_id()
-            active_lists.append(list_id)
-
-            # Save clients lists
-            with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
-                for listID in active_lists:
-                    file.write(f"{listID}\n")
-
-            local_list[list_id] = shopping_list
-
-            if "noContent" in encoded_client_items:
-                client_socket.send("No sync".encode())
-            
-            else: # Synchronization logic
-
-                # SERVER LIST = local_list[list_id]
-
-                # Get CLIENT list from client socket
-                client_shoppint_list_items = encoded_client_items.split('\n')
-                print("- string received:")
-                print(client_shoppint_list_items)
-               
-                for line in client_shoppint_list_items:
-                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
-
-                    item = {
-                        "name": item_name,
-                        "quantity": item_quantity,
-                        "acquired": item_acquired,
-                        "timestamp": item_timestamp
-                    }
-
-                    print("****** ITEM *******")
-                    print(item['name'])
-                    print(item['quantity'])
-                    print(item['acquired'])
-                    print(item['timestamp'])
+        shopping_list_from_client.fill_with_item(item_id, item)
 
 
-                    local_list[list_id].fill_with_item(item_id, item)
+        print("\n=>> INITIAL CONTENT OF SHOPPING LIST '" + list_id + "':")
+        for item in shopping_list_from_client.shopping_map.items():
+            print(item.__str__())
+
+    list_exists = False
+    for id in active_lists:
+        if id == list_id:
+            list_exists = True
+    
+
+    if not list_exists: # a lista ainda não existe - criá-la de raiz     
+
+        active_lists.append(list_id)
+        local_list[list_id] = shopping_list_from_client
+
+        # Save clients lists
+        with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
+            for list_id in active_lists:
+                file.write(list_id + '\n')
+
+        response = "Your list haven't changed.\n"
+        client_socket.send(response.encode())
 
 
-            print("\n=>> INITIAL CONTENT OF SHOPPING LIST '" + list_id + "':")
-            for item in local_list[list_id].shopping_map.items():
-                print(item.__str__())
+    else: # a lista ja existe, se tiver content tem de ser merged com o que vem do client
 
-            to_send = to_send + "Your list id is '" + list_id + "'."
-            client_socket.send(to_send.encode())
-            
-        else:
-            client_socket.send("There already are active shooping lists".encode())
-            # client will choose a menu option
-            option = client_socket.recv(1024).decode().strip()
+        # local_list[list_id] pode ou não ter conteudo
 
-            if option == "1":
-                to_send = "Create new shopping list"
-
-                # Create ShoppingList object
-                shopping_list = ShoppingList()
-                list_id = shopping_list.my_id()
-                active_lists.append(list_id)
+        # MERGE SHOPPING LIST REPLICAS
+        local_list[list_id] = local_list[list_id].merge(shopping_list_from_client)
 
 
-                # Save clients lists
-                with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
-                    for listID in active_lists:
-                        file.write(f"{listID}\n")
-
-                local_list[list_id] = shopping_list
-
-                to_send = to_send + "Your list id is '" + list_id + "'."
-                client_socket.send(to_send.encode()) 
+        # Print the updated/merged list in the server
+        print("\n=>> Updated server list '" + list_id + "':")
+        for item in local_list[list_id].shopping_map.items():
+            print(item.__str__())
 
 
-            elif option == "2":                
-                to_send = "\nChoose one list ID:\n"
+        # Create a response string containing the updated list and sync success message
+        response = ""
+        for item_id, item in local_list[list_id].shopping_map.items():
+            response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'  
+        response += "Syncronization done with success - Your list have changed.\n"
 
-                # get all the lists available
-                idx = 1
-                for list_id in active_lists:
-                    to_send += str(idx) + " - " + str(list_id) + "\n"
-                    idx = idx + 1
+        # Send the updated list back to the client
+        client_socket.send(response.encode())
 
-                client_socket.send(to_send.encode())
-                option = client_socket.recv(1024).decode().strip()
-
-                list_id = active_lists[int(option) - 1]
-                active_lists.append(list_id)
-
-                with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
-                    for listID in active_lists:
-                        file.write(f"{listID}\n")
-
-                if local_list[list_id].is_empty():
-                    client_socket.send("empty_list".encode())
-                else:
-                    response = ""    # server local items
-                    for item_id, item in local_list[list_id].shopping_map.items():
-                        response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
-
-                    client_socket.send(response.encode())                    
-                        
-
-        listed = True
-        
-    #print("User '", user_id, "' is associated with shopping list '", list_id, "'")
-
-    while True:
-        client_socket.send("Show menu.\n".encode())
-
-        encoded_client_items = client_socket.recv(1024).decode().strip()
-        
-        if "noContent" in encoded_client_items:
-            client_socket.send("No sync".encode())
-        
-        else: # Synchronization logic
-
-            # SERVER LIST = local_list[list_id]
-
-            # Get CLIENT list from client socket
-            client_shoppint_list_items = encoded_client_items.split('\n')
-            print("- string received:")
-            print(client_shoppint_list_items)
-            
-            # create shopping list object for client content
-            client_shoppint_list = ShoppingList()
-            for line in client_shoppint_list_items:
-                try:
-                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
-
-                    item = {
-                        "name": item_name,
-                        "quantity": item_quantity,
-                        "acquired": item_acquired,
-                        "timestamp": item_timestamp
-                    }
-
-                    print("****** ITEM *******")
-                    print(item['name'])
-                    print(item['quantity'])
-                    print(item['acquired'])
-                    print(item['timestamp'])
-
-
-                    client_shoppint_list.fill_with_item(item_id, item)
-
-                except:
-                    continue
-            
-            # MERGE SHOPPING LIST REPLICAS
-            local_list[list_id] = local_list[list_id].merge(client_shoppint_list)
-
-
-            # Print the updated/merged list in the server
-            print("\n=>> Updated server list '" + list_id + "':")
-            for item in local_list[list_id].shopping_map.items():
-                print(item.__str__())
-            print("-------------------------\n")
-
-            # Create a response string containing the updated list and sync success message
-            response = ""
-            for item_id, item in local_list[list_id].shopping_map.items():
-                response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'  
-
-
-            response += "Syncronization done with success.\n"
-
-            # Send the updated list back to the client
-            client_socket.send(response.encode())
     
     client_socket.close()
+
 
 def signal_handler(sig, frame):
     print("\nShutting down the server...")

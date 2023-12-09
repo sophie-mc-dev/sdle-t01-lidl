@@ -20,15 +20,12 @@ local_list = {}
 active_lists = []
 
 
-
 # ----------------------------- Fetch data -----------------------------
 
 try: # User lists
     with open(db_dir + "/server_data/active_lists_file.txt", 'r') as file:
-        for listID in file:
-            #user_id, lists_IDs = line.strip().split(':')
-            #lists_IDs = line.strip().split(',')
-            active_lists.append(listID)
+        for list_id in file:
+            active_lists.append(list_id)
 except FileNotFoundError:
     pass
 

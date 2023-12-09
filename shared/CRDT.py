@@ -6,7 +6,7 @@ import random
 
 class ShoppingList:
     def __init__(self):
-        self.id = token_urlsafe(16)
+        self.id = "" #token_urlsafe(16)
 
         self.v = {self.id: 0} # vector clock to track the causal ordering of operations
 
@@ -19,6 +19,10 @@ class ShoppingList:
     def my_id(self):
         """Returns the ID of the shopping list."""
         return self.id
+    
+    def set_id(self, list_id):
+        """Sets the ID of the shopping list."""
+        self.id = list_id
 
     def is_empty(self):
         """Returns True if shopping list is empty, or False otherwise"""
@@ -44,11 +48,6 @@ class ShoppingList:
         Adds user id to shopping list's Users set
         """
         self.Users.add(user_id)
-
-
-    def my_id(self):
-        """Returns the ID of the shopping list."""
-        return self.id
     
     def contains(self, item_id):
         """Checks if the item is present in the shopping list."""
