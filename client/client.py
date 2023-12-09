@@ -16,13 +16,9 @@ host = "localhost"
 port = 5555
 
 
-# define user id
-print("Please choose your userID: ")
-user_id = input("UserID: ")
 # choose a list ID to connect
 print("Please enter listID: ")
 list_id = input("ListID: ")
-
 
 
 # Create ShoppingList object
@@ -194,7 +190,7 @@ while True:
     if client_socket is not None:
 
         # marosca para mandar o userID e a listID
-        items_str = "IDs:user_id:" + user_id + ":list_id:" + list_id + '\n'
+        items_str = "list_id:to:send:is:" + list_id + '\n'
         
         for item_id, item in local_list[list_id].shopping_map.items():
             items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
@@ -248,8 +244,6 @@ while True:
             local_list[list_id] = updated_shopping_list
         
         else: # client shopping list is already updated
-            print("here------------")
-            print(local_list[list_id])
             pass
 
 

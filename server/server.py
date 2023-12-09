@@ -37,34 +37,33 @@ def handle_client(client_socket):
     client_shoppint_list_items = encoded_client_items.split('\n')
     
     for line in client_shoppint_list_items:
-        item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
-        if item_id == "IDs":
-            user_id = item_quantity
-            list_id = item_timestamp
-            print("............... list_id")
+        try:
+            item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
-            print(list_id)
-            shopping_list_from_client.set_id(list_id)
-            continue
-        
-        item = {
-            "name": item_name,
-            "quantity": item_quantity,
-            "acquired": item_acquired,
-            "timestamp": item_timestamp
-        }
+            if item_id == "list_id":
+                list_id = item_timestamp
+                shopping_list_from_client.set_id(list_id)
+                continue
+            
+            item = {
+                "name": item_name,
+                "quantity": item_quantity,
+                "acquired": item_acquired,
+                "timestamp": item_timestamp
+            }
 
-        print("\n****** ITEM *******")
-        print(item['name'])
-        print(item['quantity'])
-        print(item['acquired'])
-        print(item['timestamp'])
+            print("\n****** ITEM *******")
+            print(item['name'])
+            print(item['quantity'])
+            print(item['acquired'])
+            print(item['timestamp'])
 
-        shopping_list_from_client.fill_with_item(item_id, item)
+            shopping_list_from_client.fill_with_item(item_id, item)
+        except:
+            pass
 
-
-        print("\n=>> INITIAL CONTENT OF SHOPPING LIST '" + list_id + "':")
+        print("\n=> INITIAL CONTENT OF CLIENT LIST '" + list_id + "':")
         for item in shopping_list_from_client.shopping_map.items():
             print(item.__str__())
 
@@ -92,12 +91,15 @@ def handle_client(client_socket):
 
         # local_list[list_id] pode ou não ter conteudo
 
-        # MERGE SHOPPING LIST REPLICAS
-        local_list[list_id] = local_list[list_id].merge(shopping_list_from_client)
+        #print("\n=> Client list '" + list_id + "':")
+        for item_id, item in shopping_list_from_client.shopping_map.items():
+            local_list[list_id].fill_with_item(item_id, item)
 
+        # MERGE SHOPPING LIST REPLICAS
+        #local_list[list_id] = local_list[list_id].merge(shopping_list_from_client)
 
         # Print the updated/merged list in the server
-        print("\n=>> Updated server list '" + list_id + "':")
+        print("\n=>> MERGED LIST:")
         for item in local_list[list_id].shopping_map.items():
             print(item.__str__())
 
