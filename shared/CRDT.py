@@ -95,9 +95,15 @@ class ShoppingList:
         self.v[list_id] += 1
         item['timestamp'] = self.v[list_id]
 
+        item_name = item['name']
+        existing_items = [existing_item for existing_item in self.shopping_map.values() if existing_item["name"] == item_name]
+
+        if existing_items:
+            print(f"Warning! An item with the name '{item_name}' already exists in this shopping list.")
+
         # Add item to the shopping map
         self.shopping_map[item_id] = {
-            "name": item["name"],
+            "name": item_name,
             "quantity": item["quantity"],
             "acquired": False,
             "timestamp": item["timestamp"]
@@ -227,7 +233,7 @@ class ShoppingList:
                     self.shopping_map[self_id]["quantity"] = int(chosen_replica["quantity"])
                     self.shopping_map[self_id]["timestamp"] = chosen_replica["timestamp"]
                 
-                # No conflicts in quantity or acquired status, update with the latest timestamp
+                # No conflicts in quantity or acquired status, update with random replica
                 else:
                     self.shopping_map[self_id] = chosen_replica
             
