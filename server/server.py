@@ -111,6 +111,13 @@ def handle_client(client_socket):
         # Send the updated list back to the client
         client_socket.send(response.encode())
 
+    # Save shopping list in the database
+    try:
+        with open(db_dir + "/server_data/shopping_lists/" + list_id + '.txt', 'w') as file:
+            for item_id, item in local_list[list_id].shopping_map.items():
+                file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
+    except FileNotFoundError:
+        pass
     
     client_socket.close()
 
