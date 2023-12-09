@@ -34,7 +34,7 @@ def connect_to_server():
 
         # Try to connect to the server
         client_socket.connect((host, port))
-        print("Connected to the server successfully!")
+        #print("Connected to the server successfully!")
         return client_socket
     except Exception as e:
         # Handle connection errors
@@ -182,7 +182,7 @@ while True:
 
 
     # When you want to update things, connect to the server
-    print("Retrying connect to server now...")
+    print("Trying connect to server now...")
     time.sleep(1)
 
     client_socket = connect_to_server()
@@ -195,10 +195,9 @@ while True:
         for item_id, item in local_list[list_id].shopping_map.items():
             items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
         
-        # send user id and user list content
+        # send user id and user list content to server
         try:
             client_socket.send(items_str.encode())
-            print("Data sent to the server.")
         except Exception as e:
             # Handle sending data errors
             print(f"Error sending data to the server: {e}")

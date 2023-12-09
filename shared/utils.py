@@ -27,7 +27,6 @@ try: # User lists
         for list_id in file:
             list_id = list_id.strip()  # Removes '\n'
             active_lists.append(list_id)
-            print(active_lists)
 except FileNotFoundError:
     pass
 
