@@ -185,57 +185,64 @@ class ShoppingList:
         # Extract item names from the current instance and the replica
         self_items_names = {item['name']: item for item in self.shopping_map.values()}
         replica_items_names = {item['name']: item for item in replica.shopping_map.values()}
+        
+        print()
+        print(self_items_names)
+        print(replica_items_names)
 
         # Handle conflicts based on timestamps, quantities and acquired status
         for item_name in replica_items_names:
+            is_self_defined = False
             for item_id, item in self.shopping_map.items():
                 if (item_name == item['name']):
                     self_id = item_id
                     self_item = item
+                    is_self_defined = True
 
             for item_id, item in replica.shopping_map.items():
                 if (item_name == item['name']):
                     replica_id = item_id
                     replica_item = item
+                    
+            if is_self_defined:
+                # IF REPLICA'S MODIFICATION IS MORE RECENT
+                if int(replica_item["timestamp"]) > int(self_item["timestamp"]):
 
-            # IF REPLICA'S MODIFICATION IS MORE RECENT
-            if int(replica_item["timestamp"]) > int(self_item["timestamp"]):
+                    # Check for conflicts in acquired status
+                    if replica_item["acquired"] != self_item["acquired"]:
+                        self.shopping_map[self_id]["acquired"] = replica.shopping_map[replica_id]["acquired"]
+                        self.shopping_map[self_id]["timestamp"] = replica.shopping_map[replica_id]["timestamp"]
+                    
+                    # Check for conflicts in quantities
+                    if replica_item["quantity"] != self_item["quantity"]:
+                        # Handle quantity conflict
+                        self.shopping_map[self_id]["quantity"] = int(replica.shopping_map[replica_id]["quantity"])
+                        self.shopping_map[self_id]["timestamp"] = replica.shopping_map[replica_id]["timestamp"]
+                    
+                    # No conflicts in quantity or acquired status, update with the latest timestamp
+                    else:
+                        self.shopping_map[self_id] = replica_item
 
-                # Check for conflicts in acquired status
-                if replica_item["acquired"] != self_item["acquired"]:
-                    self.shopping_map[self_id]["acquired"] = replica.shopping_map[replica_id]["acquired"]
-                    self.shopping_map[self_id]["timestamp"] = replica.shopping_map[replica_id]["timestamp"]
+                # IF TIMESTAMPS ARE THE SAME
+                if int(replica_item["timestamp"]) == int(self_item["timestamp"]):
+
+                    chosen_replica = random.choice([self_item, replica_item])
+
+                    # Check for conflicts in acquired status
+                    if replica_item["acquired"] != self_item["acquired"]:
+                        self.shopping_map[self_id]["acquired"] = chosen_replica["acquired"]
+                        self.shopping_map[self_id]["timestamp"] = chosen_replica["timestamp"]
+                    
+                    # Check for conflicts in quantities
+                    if replica_item["quantity"] != self_item["quantity"]:
+                        # Handle quantity conflict
+                        self.shopping_map[self_id]["quantity"] = int(chosen_replica["quantity"])
+                        self.shopping_map[self_id]["timestamp"] = chosen_replica["timestamp"]
+                    
+                    # No conflicts in quantity or acquired status, update with random replica
+                    else:
+                        self.shopping_map[self_id] = chosen_replica
                 
-                # Check for conflicts in quantities
-                if replica_item["quantity"] != self_item["quantity"]:
-                    # Handle quantity conflict
-                    self.shopping_map[self_id]["quantity"] = int(replica.shopping_map[replica_id]["quantity"])
-                    self.shopping_map[self_id]["timestamp"] = replica.shopping_map[replica_id]["timestamp"]
-                
-                # No conflicts in quantity or acquired status, update with the latest timestamp
-                else:
-                    self.shopping_map[self_id] = replica_item
-
-            # IF TIMESTAMPS ARE THE SAME
-            if int(replica_item["timestamp"]) == int(self_item["timestamp"]):
-
-                chosen_replica = random.choice([self_item, replica_item])
-
-                # Check for conflicts in acquired status
-                if replica_item["acquired"] != self_item["acquired"]:
-                    self.shopping_map[self_id]["acquired"] = chosen_replica["acquired"]
-                    self.shopping_map[self_id]["timestamp"] = chosen_replica["timestamp"]
-                
-                # Check for conflicts in quantities
-                if replica_item["quantity"] != self_item["quantity"]:
-                    # Handle quantity conflict
-                    self.shopping_map[self_id]["quantity"] = int(chosen_replica["quantity"])
-                    self.shopping_map[self_id]["timestamp"] = chosen_replica["timestamp"]
-                
-                # No conflicts in quantity or acquired status, update with random replica
-                else:
-                    self.shopping_map[self_id] = chosen_replica
-            
         # Merge items from replica into self.shopping_map
         for item_name in replica_items_names:
             if item_name not in self_items_names:

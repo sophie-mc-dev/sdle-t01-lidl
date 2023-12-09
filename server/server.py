@@ -89,14 +89,10 @@ def handle_client(client_socket):
 
     else: # a lista ja existe, se tiver content tem de ser merged com o que vem do client
 
-        # local_list[list_id] pode ou não ter conteudo
-
-        #print("\n=> Client list '" + list_id + "':")
-        for item_id, item in shopping_list_from_client.shopping_map.items():
-            local_list[list_id].fill_with_item(item_id, item)
+        # local_list[list_id] -> pode ou não ter conteudo
 
         # MERGE SHOPPING LIST REPLICAS
-        #local_list[list_id] = local_list[list_id].merge(shopping_list_from_client)
+        local_list[list_id] = local_list[list_id].merge(shopping_list_from_client)
 
         # Print the updated/merged list in the server
         print("\n=>> MERGED LIST:")
