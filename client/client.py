@@ -215,10 +215,9 @@ while True:
 
         # merge happens, need to update client local shopping_list
         if 'Your list have changed' in response:
-            print("         *** MERGE HAPPENS    ***")
 
             # Add '\n' to the end of each element in the list
-            items = [item + '\n' for item in list_plus_message]
+            items = list_plus_message
             # 'items' contains the items from local client union with server items
 
             # update client local shopping_list
@@ -245,7 +244,6 @@ while True:
         
         else: # client shopping list is already updated
             pass
-
 
 
         # Close the connection to the server

@@ -25,7 +25,8 @@ active_lists = []
 try: # User lists
     with open(db_dir + "/server_data/active_lists_file.txt", 'r') as file:
         for list_id in file:
-            active_lists.append(list_id)
+            if list_id != '\n':
+                active_lists.append(list_id)
 except FileNotFoundError:
     pass
 
