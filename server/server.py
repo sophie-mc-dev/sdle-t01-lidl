@@ -104,7 +104,6 @@ def handle_client(client_socket):
 
     else: # a lista já existe, se tiver content tem de ser merged com o que vem do client
 
-        fetch_data()
         print(server_local_lists)
 
         # MERGE SHOPPING LIST REPLICAS
