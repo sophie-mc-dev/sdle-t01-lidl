@@ -38,34 +38,28 @@ def handle_client(client_socket):
     
     for line in client_shoppint_list_items:
 
-        try:
-            item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+        
+        item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
-            if item_id == "list_id":
-                list_id = item_timestamp
-                shopping_list_from_client.set_id(list_id)
-                continue
-            
-            item = {
-                "name": item_name,
-                "quantity": item_quantity,
-                "acquired": item_acquired,
-                "timestamp": item_timestamp
-            }
+        if item_id == "list_id":
+            list_id = item_timestamp
+            shopping_list_from_client.set_id(list_id)
+            continue
+        
+        item = {
+            "name": item_name,
+            "quantity": item_quantity,
+            "acquired": item_acquired,
+            "timestamp": item_timestamp
+        }
 
-            print("\n****** ITEM *******")
-            print(item['name'])
-            print(item['quantity'])
-            print(item['acquired'])
-            print(item['timestamp'])
+        shopping_list_from_client.fill_with_item(item_id, item)
 
-            shopping_list_from_client.fill_with_item(item_id, item)
-        except:
-            pass
 
-        print("\n=> INITIAL CONTENT OF CLIENT LIST '" + list_id + "':")
-        for item in shopping_list_from_client.shopping_map.items():
-            print(item.__str__())
+        print("\n\n> Client Shopping List '" + list_id + "' initial content:")
+        for item_id, item in shopping_list_from_client.shopping_map.items():
+            print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
+
 
     list_exists = False
     for id in active_lists:
@@ -89,17 +83,15 @@ def handle_client(client_socket):
         client_socket.send(response.encode())
 
 
-    else: # a lista ja existe, se tiver content tem de ser merged com o que vem do client
-
-        # local_list[list_id] -> pode ou não ter conteudo
+    else: # a lista já existe, se tiver content tem de ser merged com o que vem do client
 
         # MERGE SHOPPING LIST REPLICAS
         local_list[list_id] = local_list[list_id].merge(shopping_list_from_client)
 
         # Print the updated/merged list in the server
-        print("\n=>> MERGED LIST:")
-        for item in local_list[list_id].shopping_map.items():
-            print(item.__str__())
+        print("\n> MERGED LIST:")
+        for item_id, item in local_list[list_id].shopping_map.items():
+            print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
 
 
         # Create a response string containing the updated list and sync success message
@@ -110,6 +102,7 @@ def handle_client(client_socket):
 
         # Send the updated list back to the client
         client_socket.send(response.encode())
+
 
     # Save shopping list in the database
     try:

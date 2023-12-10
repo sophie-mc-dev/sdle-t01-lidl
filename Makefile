@@ -1,2 +1,7 @@
-# This Makefile is running before starting the server by the command:
-# ./run_server.bat
+clean_file:
+	type NUL > database\active_lists_file.txt
+
+clean_folder:
+	del database\shopping_lists\* /Q
+
+clean: clean_file clean_folder

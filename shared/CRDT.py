@@ -199,10 +199,6 @@ class ShoppingList:
         self_items_names = {item['name']: item for item in self.shopping_map.values()}
         replica_items_names = {item['name']: item for item in replica.shopping_map.values()}
         
-        print()
-        print(self_items_names)
-        print(replica_items_names)
-
         # Handle conflicts based on timestamps, quantities and acquired status
         for item_name in replica_items_names:
             is_self_defined = False

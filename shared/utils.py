@@ -61,14 +61,34 @@ except FileNotFoundError:
 
 # ----------------------------- Auxiliar functions -----------------------------
 
-# prints current client local list
-# function only called by the client
-def print_user_list(user_id):
-    print(f"\n> Your List content:")
-    print("Items: ")
-    if local_list[user_id].is_empty():
-        print("Oops... Looks like you have no items yet.")
+# prints current client local list items
+def print_user_list(list_id):
+    if local_list[list_id].is_empty():
+        print("\nOops...")
+        print("Looks like you have no items yet.")
     else:
-        for item_id, item in local_list[user_id].shopping_map.items():
-            print(f" Item ID: {item_id}, Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
-    print("------------------------------\n")
+        print(f"\n> Your Shopping List Items:")
+        for item_id, item in local_list[list_id].shopping_map.items():
+            print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
+
+def show_menu(list_id):
+    print("\n-------------- MENU --------------")
+    print_user_list(list_id)
+    print("\n----------------------------------") 
+
+    print("\nChoose one option:")
+    print(" 1 - Modify Shopping List")
+    print(" 0 - Syncronize Shopping List")
+    key = input("Option: ")   
+
+    return key
+
+
+
+# called to show items before a list modification
+def aux_print_items(list_id):
+    print("\nItems:")
+    for item_id, item in local_list[list_id].shopping_map.items():
+        print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
+
+ 
