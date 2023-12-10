@@ -1,6 +1,5 @@
 import uuid
 from .pncounter import PNCounter
-from .utils import *
 from secrets import token_urlsafe
 import random
 
@@ -198,6 +197,9 @@ class ShoppingList:
         # Extract item names from the current instance and the replica
         self_items_names = {item['name']: item for item in self.shopping_map.values()}
         replica_items_names = {item['name']: item for item in replica.shopping_map.values()}
+
+        print("SELF ", self_items_names)
+        print("REPLICA ", replica_items_names)
         
         # Handle conflicts based on timestamps, quantities and acquired status
         for item_name in replica_items_names:
@@ -262,6 +264,13 @@ class ShoppingList:
                         replica_id = item_id
 
                 self.shopping_map[replica_id] = replica.shopping_map[replica_id]
+
+        # Merge items from replica in case of item deletion
+        for item_name in self_items_names:
+            if item_name not in replica_items_names:
+                item_id = self.get_item_id_by_name(item_name)
+                if item_id is not None:
+                    del self.shopping_map[item_id]
 
         # Merge quantity counters and acquired counters            
         for item_id in replica.quantity_counters:
