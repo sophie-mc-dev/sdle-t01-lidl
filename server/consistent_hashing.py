@@ -4,6 +4,8 @@ import threading
 import time
 import hashlib
 
+import psutil
+
 # List to store server processes
 server_processes = []
 
@@ -60,11 +62,11 @@ def handle_client(client_sock, client_addr):
 
 
             # Calculate the average CPU usage across existing servers
-            #average_cpu_usage = sum(psutil.cpu_percent(percpu=True)[0] for _ in server_ports) / len(server_ports)
-            #print("Average CPU Usage:", average_cpu_usage)
+            average_cpu_usage = sum(psutil.cpu_percent(percpu=True)[0] for _ in server_ports) / len(server_ports)
+            print("Average CPU Usage:", average_cpu_usage)
 
             # Dynamically add a new server if the average CPU usage is above a threshold
-            '''
+            
             if (average_cpu_usage > 70):  # Adjust this threshold based on your requirements
                 print("Adding a new server due to high CPU usage...")
                 with server_startup_lock:
@@ -73,7 +75,7 @@ def handle_client(client_sock, client_addr):
                     server_process = start_server(new_port)
                     server_processes.append(server_process)
                     print("Started a new server in port", new_port)
-                    time.sleep(1)  # Allow some time for the server to start '''
+                    time.sleep(1)  # Allow some time for the server to start 
 
             # Choose the server based on consistent hashing
             current_server_port = get_server_port(list_id)
@@ -96,7 +98,7 @@ def handle_client(client_sock, client_addr):
 
             print("Connection closed. Closing load balancer connection.")
             server_sock.close()
-            client_sock.close()
+        client_sock.close()
 
     except Exception as e:
         print("Error forwarding connection:", e)

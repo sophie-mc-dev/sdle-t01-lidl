@@ -53,7 +53,7 @@ try:
                 "timestamp": item_timestamp
             }
 
-        shopping_list.fill_with_item(item_id, item)
+            shopping_list.fill_with_item(item_id, item)
 
     client_local_lists[list_id] = shopping_list
         
