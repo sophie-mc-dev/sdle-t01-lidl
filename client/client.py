@@ -27,6 +27,7 @@ list_id = input("> ListID: ")
 
 # Create ShoppingList object
 shopping_list = ShoppingList()
+shopping_list.set_replica_id(user_id)
 shopping_list.set_id(list_id)
 
 # Create a folder for the user if it doesn't exist
@@ -55,6 +56,9 @@ try:
 
             shopping_list.fill_with_item(item_id, item)
 
+    print("heyyyyyyy")    
+    print(shopping_list.shopping_map.items())
+
     client_local_lists[list_id] = shopping_list
         
 except FileNotFoundError:
@@ -70,6 +74,7 @@ def connect_to_server():
 
         # Try to connect to the server
         client_socket.connect((host, port))
+        # client_socket.send(user_id.encode())
         return client_socket
     except Exception as e:
         # Handle connection errors
@@ -132,7 +137,8 @@ while True:
             else:
                 aux_print_items(list_id)
                 item_to_increment = input("\n> Enter the name of the item to increment: ")
-                client_local_lists[list_id].increment_quantity(item_to_increment)
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_increment)
+                client_local_lists[list_id].increment_quantity(item_id)
                 print("\nItem quantity incremented successfully.")
 
         # Decrement quantity
@@ -145,7 +151,8 @@ while True:
             else:
                 aux_print_items(list_id)
                 item_to_decrement = input("\n> Enter the name of the item to decrement: ")
-                client_local_lists[list_id].decrement_quantity(item_to_decrement)
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_decrement)
+                client_local_lists[list_id].decrement_quantity(item_id)
                 print("\nItem quantity decremented successfully.")
 
         # Item acquired 
@@ -158,7 +165,8 @@ while True:
             else:
                 aux_print_items(list_id)
                 item_to_update = input("\n> Enter the name of the item to update status: ")
-                client_local_lists[list_id].update_acquired_status(item_to_update, True)
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_update)
+                client_local_lists[list_id].update_acquired_status(item_id, True)
                 print("\nAcquired status updated successfully.")
 
         # Item not acquired
@@ -171,28 +179,32 @@ while True:
             else:
                 aux_print_items(list_id)
                 item_to_update = input("\n> Enter the name of the item to update status: ")
-                client_local_lists[list_id].update_acquired_status(item_to_update, False)
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_update)
+                client_local_lists[list_id].update_acquired_status(item_id, False)
                 print("\nAcquired status updated successfully.")
         
 
                 is_empty = client_local_lists[list_id].is_empty()
 
-                if is_empty:
+                """ if is_empty:
                     print("\nYou have no items to decrement.\n")
                 else:
                     aux_print_items(list_id)
                     item_to_update = input("\n> Enter the name of the item to update status: ")
                     client_local_lists[list_id].update_acquired_status(item_to_update, False)
-                    print("\nAcquired status updated successfully.")
+                    print("\nAcquired status updated successfully.") """
       
 
     # After all local changes were made, save locally and try to update list to server:
 
     # Save shopping list in the client pc
     try:
+        print(client_local_lists[list_id].shopping_map.items())
         with open(client_shopping_list_file_path, 'w') as file:
             for item_id, item in client_local_lists[list_id].shopping_map.items():
+                print("saved")
                 file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
+                # file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
     except FileNotFoundError:
         pass
 
@@ -200,15 +212,20 @@ while True:
 
     print("\n\nTrying connect to server now...")
     client_socket = connect_to_server()
+    print("Connected to the server.")
+    print(client_socket)
 
     if client_socket is not None:
 
         # marosca para mandar o userID e a listID
-        items_str = "list_id:to:send:is:" + list_id + '\n'
+        items_str = list_id + ":" + user_id + "\n"
+
+        print(client_local_lists[list_id].shopping_map.items())
         
         for item_id, item in client_local_lists[list_id].shopping_map.items():
             items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
         
+        print(items_str)
         # send user id and user list content to server
         client_socket.send(items_str.encode())
         

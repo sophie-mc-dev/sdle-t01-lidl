@@ -32,42 +32,52 @@ print("\nServer is listening...")
 # Function to handle a client
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
+
+    # user_id = client_socket.recv(1024).decode()
     
     # Create ShoppingList object
     shopping_list_from_client = ShoppingList()
+
+    # shopping_list_from_client.set_replica_id(user_id)
 
 
     # Get data from client socket
 
     encoded_client_items = client_socket.recv(1024).decode().strip()
+    print("\n\n> Client Shopping List encoded:")
+    print(encoded_client_items)
+    client_shopping_list_items = encoded_client_items.split('\n')
+    print("\n\n> Client Shopping List items:")
+    print(client_shopping_list_items)
 
-    print("Client Shopping List initial content on server: " + encoded_client_items)
-    client_shoppint_list_items = encoded_client_items.split('\n')
     
-    for line in client_shoppint_list_items:
-
-        
-        item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
-
-        if item_id == "list_id":
-            list_id = item_timestamp
-            print("list_id: ", list_id)
+    
+    for line in client_shopping_list_items:
+        parts = line.split(':')
+        print(len(parts))
+        if len(parts) == 2:
+            list_id, user_id = parts
             shopping_list_from_client.set_id(list_id)
+            shopping_list_from_client.set_replica_id(user_id)
+            shopping_list_from_client.increment_counter()
             continue
-        
-        item = {
-            "name": item_name,
-            "quantity": item_quantity,
-            "acquired": item_acquired,
-            "timestamp": item_timestamp
-        }
+        else:
+            print("hereeeeeee")
+            item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+            
+            item = {
+                "name": item_name,
+                "quantity": item_quantity,
+                "acquired": item_acquired,
+                "timestamp": item_timestamp
+            }
 
-        shopping_list_from_client.fill_with_item(item_id, item)
+            shopping_list_from_client.fill_with_item(item_id, item)
 
 
-        print("\n\n> Client Shopping List '" + list_id + "' initial content:")
-        for item_id, item in shopping_list_from_client.shopping_map.items():
-            print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
+    print("\n\n> Client Shopping List '" + list_id + "' initial content:")
+    for item_id, item in shopping_list_from_client.shopping_map.items():
+        print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
 
 
     list_exists = False
@@ -93,6 +103,9 @@ def handle_client(client_socket):
 
 
     else: # a lista já existe, se tiver content tem de ser merged com o que vem do client
+
+        fetch_data()
+        print(server_local_lists)
 
         # MERGE SHOPPING LIST REPLICAS
         server_local_lists[list_id] = server_local_lists[list_id].merge(shopping_list_from_client)
@@ -125,6 +138,7 @@ def handle_client(client_socket):
 
 
 def signal_handler(sig, frame):
+
     print("\nShutting down the server...")
     server_socket.close()
     sys.exit(0)
@@ -136,6 +150,7 @@ signal.signal(signal.SIGINT, signal_handler)
 # Main server loop
 while True:
     client_socket, client_address = server_socket.accept()
+    print("\nNew connection from", client_address)
 
     # Create a new thread to handle the client
     client_handler = threading.Thread(target=handle_client, args=(client_socket,))
