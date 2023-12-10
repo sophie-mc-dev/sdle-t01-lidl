@@ -197,16 +197,7 @@ while True:
 
     # After all local changes were made, save locally and try to update list to server:
 
-    # Save shopping list in the client pc
-    try:
-        print(client_local_lists[list_id].shopping_map.items())
-        with open(client_shopping_list_file_path, 'w') as file:
-            for item_id, item in client_local_lists[list_id].shopping_map.items():
-                print("saved")
-                file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
-                # file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
-    except FileNotFoundError:
-        pass
+    
 
     # Syncronize Shopping List
 
@@ -276,4 +267,17 @@ while True:
         client_socket.close()
         print("Disconnected from the server.")
 
+
+    # Save shopping list in the client pc
+    try:
+        print(client_local_lists[list_id].shopping_map.items())
+        with open(client_shopping_list_file_path, 'w') as file:
+            for item_id, item in client_local_lists[list_id].shopping_map.items():
+                print("saved")
+                file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
+                # file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
+    except FileNotFoundError:
+        pass
+
     # Continue working locally
+
