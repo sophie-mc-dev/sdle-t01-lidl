@@ -6,6 +6,6 @@ delete_server_lists:
 
 delete_clients_folders:
 	rd /s /q database\client_data
-	mkdir -p database\client_data
+	mkdir database\client_data
 
 clean: clean_active_lists_file delete_server_lists delete_clients_folders
