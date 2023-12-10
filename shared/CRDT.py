@@ -197,9 +197,6 @@ class ShoppingList:
         # Extract item names from the current instance and the replica
         self_items_names = {item['name']: item for item in self.shopping_map.values()}
         replica_items_names = {item['name']: item for item in replica.shopping_map.values()}
-
-        print("SELF ", self_items_names)
-        print("REPLICA ", replica_items_names)
         
         # Handle conflicts based on timestamps, quantities and acquired status
         for item_name in replica_items_names:
