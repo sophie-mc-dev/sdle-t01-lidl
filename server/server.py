@@ -72,10 +72,10 @@ def handle_client(client_socket):
     if not list_exists: # a lista ainda não existe - criá-la de raiz     
 
         active_lists.append(list_id)
-        local_list[list_id] = shopping_list_from_client
+        server_local_lists[list_id] = shopping_list_from_client
 
         # Save clients lists
-        with open(db_dir + "/active_lists_file.txt", 'w') as file:
+        with open(db_dir + "/server_data/active_lists_file.txt", 'w') as file:
             for list_id in active_lists:
                 file.write(list_id + '\n')
 
@@ -86,17 +86,17 @@ def handle_client(client_socket):
     else: # a lista já existe, se tiver content tem de ser merged com o que vem do client
 
         # MERGE SHOPPING LIST REPLICAS
-        local_list[list_id] = local_list[list_id].merge(shopping_list_from_client)
+        server_local_lists[list_id] = server_local_lists[list_id].merge(shopping_list_from_client)
 
         # Print the updated/merged list in the server
         print("\n> MERGED LIST:")
-        for item_id, item in local_list[list_id].shopping_map.items():
+        for item_id, item in server_local_lists[list_id].shopping_map.items():
             print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
 
 
         # Create a response string containing the updated list and sync success message
         response = ""
-        for item_id, item in local_list[list_id].shopping_map.items():
+        for item_id, item in server_local_lists[list_id].shopping_map.items():
             response += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'  
         response += "Syncronization done with success - Your list have changed.\n"
 
@@ -106,8 +106,8 @@ def handle_client(client_socket):
 
     # Save shopping list in the database
     try:
-        with open(db_dir + "/shopping_lists/" + list_id + '.txt', 'w') as file:
-            for item_id, item in local_list[list_id].shopping_map.items():
+        with open(db_dir + "/server_data/shopping_lists/" + list_id + '.txt', 'w') as file:
+            for item_id, item in server_local_lists[list_id].shopping_map.items():
                 file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
     except FileNotFoundError:
         pass

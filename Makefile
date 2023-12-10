@@ -1,7 +1,8 @@
 clean_file:
 	type NUL > database\active_lists_file.txt
 
-clean_folder:
-	del database\shopping_lists\* /Q
+clean_folders:
+	del database\server_data\shopping_lists\* /Q
+	del database\client_data\shopping_lists\* /Q
 
-clean: clean_file clean_folder
+clean: clean_file clean_folders
