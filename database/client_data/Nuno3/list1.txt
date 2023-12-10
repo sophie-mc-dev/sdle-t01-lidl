@@ -1,0 +1,6 @@
+b4bf948e-55b5-4cf4-a98e-0b2f7d8e2d27:apples:5:1:14
+2a55e7f1-3012-4d06-bc5c-2c6787b6d5ba:oranges:11:0:22
+5d45fc18-34e0-4643-8d84-654aa382cfc5:bananas:19:2:17
+a8a92c6b-bda6-4395-bd61-639f1652d510:batatas:5:0:16
+cded2d8f-e0d7-498e-89c8-0bc679f3916e:massa:5:2:25
+872b0c8a-6767-47a6-a004-bdbe0db29ee0:milk:9:1:24

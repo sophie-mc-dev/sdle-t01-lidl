@@ -1,20 +1,27 @@
 from .gcounter import GCounter
 
 class PNCounter:
-    def __init__(self, id):
-        self.P = GCounter(id)
-        self.N = GCounter(id)
-        self.id = id
+    def __init__(self, replica_id, item_id):
+        self.P = GCounter(item_id, replica_id)
+        self.N = GCounter(item_id, replica_id)
+        self.item_id = item_id
+        self.replica_id = replica_id
 
-    def add_new_node(self, key):
-        self.P.add_new_node(key)
-        self.N.add_new_node(key)
+    def add_new_node(self, item_id):
+        self.P.add_new_node(item_id)
+        self.N.add_new_node(item_id)
 
-    def inc(self, key):
-        self.P.inc(key)
+    def inc(self, item_id, quantity=1):
+        if quantity <= 0:
+            raise ValueError("Quantity must be positive")
+        elif quantity > 1:
+            for i in range(quantity):
+                self.P.inc(item_id)
+        else:
+            self.P.inc(item_id)
 
-    def dec(self, key):
-        self.N.inc(key)
+    def dec(self, item_id):
+         self.N.inc(item_id)
 
     def query(self):
         return self.P.query() - self.N.query()

@@ -23,42 +23,42 @@ active_lists = []
 
 
 # ----------------------------- Fetch data -----------------------------
+def fetch_data():
+    # Active shopping lists
+    try: 
+        with open(db_dir + "/server_data/active_lists_file.txt", 'r') as file:
+            for list_id in file:
+                list_id = list_id.strip()  # Removes '\n'
+                active_lists.append(list_id)
+    except FileNotFoundError:
+        pass
 
-# Active shopping lists
-try: 
-    with open(db_dir + "/server_data/active_lists_file.txt", 'r') as file:
-        for list_id in file:
-            list_id = list_id.strip()  # Removes '\n'
-            active_lists.append(list_id)
-except FileNotFoundError:
-    pass
 
+    # Get server local shopping lists
+    try: 
+        for list_id in active_lists:
 
-# Get server local shopping lists
-try: 
-    for list_id in active_lists:
+            shopping_list = ShoppingList()
+            shopping_list.set_id(list_id)
 
-        shopping_list = ShoppingList()
-        shopping_list.set_id(list_id)
+            with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
+                for line in file:
+                    line = line.strip()
+                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
-        with open(db_dir + "/server_data/shopping_lists/" + list_id + ".txt", 'r') as file:
-            for line in file:
-                line = line.strip()
-                item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+                    item = {
+                        "name": item_name,
+                        "quantity": item_quantity,
+                        "acquired": item_acquired,
+                        "timestamp": item_timestamp
+                    }
 
-                item = {
-                    "name": item_name,
-                    "quantity": item_quantity,
-                    "acquired": item_acquired,
-                    "timestamp": item_timestamp
-                }
+                shopping_list.fill_with_item(item_id, item)
 
-            shopping_list.fill_with_item(item_id, item)
-
-        server_local_lists[list_id] = shopping_list
-        
-except FileNotFoundError:
-    pass
+            server_local_lists[list_id] = shopping_list
+            
+    except FileNotFoundError:
+        pass
 
 
 # ----------------------------- Auxiliar functions -----------------------------

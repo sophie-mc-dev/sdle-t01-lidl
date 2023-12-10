@@ -17,11 +17,12 @@ class GCounter:
         id (any_type): ID of the class object.
     """
 
-    def __init__(self, id):
+    def __init__(self, replica_id, item_id):
         self.payload = {}
-        self.id = id
+        self.replica_id = replica_id
+        self.item_id = item_id
 
-    def add_new_node(self, key):
+    def add_new_node(self, item_id):
         """
         The function to add the key to the payload.
 
@@ -32,9 +33,9 @@ class GCounter:
             Initialize the key's value to 0
         """
 
-        self.payload[key] = 0
+        self.payload[item_id] = 0
 
-    def inc(self, key):
+    def inc(self, item_id):
         """
         The function to increment the key's value in payload.
 
@@ -43,7 +44,7 @@ class GCounter:
         """
 
         try:
-            self.payload[key] += 1
+            self.payload[item_id] += 1
         except Exception as e:
             print("{}".format(e))
 
