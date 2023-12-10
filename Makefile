@@ -1,8 +1,11 @@
-clean_file:
+clean_active_lists_file:
 	type NUL > database\server_data\active_lists_file.txt
 
-clean_folders:
+delete_server_lists:
 	del database\server_data\shopping_lists\* /Q
-	del database\client_data\shopping_lists\* /Q
 
-clean: clean_file clean_folders
+delete_clients_folders:
+	rd /s /q database\client_data
+	mkdir -p database\client_data
+
+clean: clean_active_lists_file delete_server_lists delete_clients_folders

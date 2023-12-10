@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 from os.path import dirname, abspath
 import time
 from shared.utils import *
@@ -27,10 +28,19 @@ list_id = input("> ListID: ")
 shopping_list = ShoppingList()
 shopping_list.set_id(list_id)
 
+# Create a folder for the user if it doesn't exist
+user_folder = os.path.join(db_dir, "client_data", user_id)
+os.makedirs(user_folder, exist_ok=True)
+
+# Path to the shopping list file inside the user's folder
+client_shopping_list_file_path = os.path.join(user_folder, list_id + ".txt")
+                
+
+
 # Get client local shopping list
 try: 
 
-    with open(db_dir + "/client_data/shopping_lists/" + user_id + "-" + list_id + ".txt", 'r') as file:
+    with open(client_shopping_list_file_path, 'r') as file:
         for line in file:
             line = line.strip()
             item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
@@ -179,7 +189,7 @@ while True:
 
     # Save shopping list in the client pc
     try:
-        with open(db_dir + "/client_data/shopping_lists/" + user_id + "-" + list_id + ".txt", 'w') as file:
+        with open(client_shopping_list_file_path, 'w') as file:
             for item_id, item in client_local_lists[list_id].shopping_map.items():
                 file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
     except FileNotFoundError:
