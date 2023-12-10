@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 from os.path import dirname, abspath
 import time
 from shared.utils import *
@@ -17,14 +18,49 @@ host = "localhost"
 port = 9090 #to load balancer version
 
 # choose a list ID to connect
-print("\nPlease enter listID: ")
-list_id = input("ListID: ")
+print("\nPlease enter your username. ")
+user_id = input("> Username: ")
+# choose a list ID to connect
+print("\nPlease enter listID. ")
+list_id = input("> ListID: ")
 
 
 # Create ShoppingList object
 shopping_list = ShoppingList()
 shopping_list.set_id(list_id)
-local_list[list_id] = shopping_list
+
+# Create a folder for the user if it doesn't exist
+user_folder = os.path.join(db_dir, "client_data", user_id)
+os.makedirs(user_folder, exist_ok=True)
+
+# Path to the shopping list file inside the user's folder
+client_shopping_list_file_path = os.path.join(user_folder, list_id + ".txt")
+                
+
+
+# Get client local shopping list
+try: 
+
+    with open(client_shopping_list_file_path, 'r') as file:
+        for line in file:
+            line = line.strip()
+            item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+
+            item = {
+                "name": item_name,
+                "quantity": item_quantity,
+                "acquired": item_acquired,
+                "timestamp": item_timestamp
+            }
+
+        shopping_list.fill_with_item(item_id, item)
+
+    client_local_lists[list_id] = shopping_list
+        
+except FileNotFoundError:
+    # first time this user is connecting
+    client_local_lists[list_id] = shopping_list
+
 
 
 def connect_to_server():
@@ -67,7 +103,7 @@ while True:
 
             try:
                 item["quantity"] = int(item["quantity"])
-                local_list[list_id].add_item(item_id, item)
+                client_local_lists[list_id].add_item(item_id, item)
                 print("\nItem added successfully.")
 
             except ValueError:
@@ -76,81 +112,90 @@ while True:
         # Delete item
         elif key == "2": 
 
-            is_empty = local_list[list_id].is_empty()
+            is_empty = client_local_lists[list_id].is_empty()
 
             if is_empty:
                 print("\nYou have no items to delete.\n")
             else:
                 aux_print_items(list_id)
                 item_to_remove = input("\n> Enter the name of the item to remove: ")
-                local_list[list_id].remove_item(item_to_remove)
+                client_local_lists[list_id].remove_item(item_to_remove)
                 print("\nItem removed successfully.")
 
         #Increment quantity
         elif key == "3":
             
-            is_empty = local_list[list_id].is_empty()
+            is_empty = client_local_lists[list_id].is_empty()
 
             if is_empty:
                 print("\nYou have no items to increment.\n")
             else:
                 aux_print_items(list_id)
                 item_to_increment = input("\n> Enter the name of the item to increment: ")
-                local_list[list_id].increment_quantity(item_to_increment)
+                client_local_lists[list_id].increment_quantity(item_to_increment)
                 print("\nItem quantity incremented successfully.")
 
         # Decrement quantity
         elif key == "4":
             
-            is_empty = local_list[list_id].is_empty()
+            is_empty = client_local_lists[list_id].is_empty()
 
             if is_empty:
                 print("\nYou have no items to decrement.\n")
             else:
                 aux_print_items(list_id)
                 item_to_decrement = input("\n> Enter the name of the item to decrement: ")
-                local_list[list_id].decrement_quantity(item_to_decrement)
+                client_local_lists[list_id].decrement_quantity(item_to_decrement)
                 print("\nItem quantity decremented successfully.")
 
         # Item acquired 
         elif key == "5":
             
-            is_empty = local_list[list_id].is_empty()
+            is_empty = client_local_lists[list_id].is_empty()
 
             if is_empty:
                 print("\nYou have no items to decrement.\n")
             else:
                 aux_print_items(list_id)
                 item_to_update = input("\n> Enter the name of the item to update status: ")
-                local_list[list_id].update_acquired_status(item_to_update, True)
+                client_local_lists[list_id].update_acquired_status(item_to_update, True)
                 print("\nAcquired status updated successfully.")
 
         # Item not acquired
         elif key == "6":
 
-            is_empty = local_list[list_id].is_empty()
+            is_empty = client_local_lists[list_id].is_empty()
 
             if is_empty:
                 print("\nYou have no items to decrement.\n")
             else:
                 aux_print_items(list_id)
                 item_to_update = input("\n> Enter the name of the item to update status: ")
-                local_list[list_id].update_acquired_status(item_to_update, False)
+                client_local_lists[list_id].update_acquired_status(item_to_update, False)
                 print("\nAcquired status updated successfully.")
         
 
-                is_empty = local_list[list_id].is_empty()
+                is_empty = client_local_lists[list_id].is_empty()
 
                 if is_empty:
                     print("\nYou have no items to decrement.\n")
                 else:
                     aux_print_items(list_id)
                     item_to_update = input("\n> Enter the name of the item to update status: ")
-                    local_list[list_id].update_acquired_status(item_to_update, False)
+                    client_local_lists[list_id].update_acquired_status(item_to_update, False)
                     print("\nAcquired status updated successfully.")
       
 
-    # After all local changes were made, update list to server:
+    # After all local changes were made, save locally and try to update list to server:
+
+    # Save shopping list in the client pc
+    try:
+        with open(client_shopping_list_file_path, 'w') as file:
+            for item_id, item in client_local_lists[list_id].shopping_map.items():
+                file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
+    except FileNotFoundError:
+        pass
+
     # Syncronize Shopping List
 
     print("\n\nTrying connect to server now...")
@@ -161,7 +206,7 @@ while True:
         # marosca para mandar o userID e a listID
         items_str = "list_id:to:send:is:" + list_id + '\n'
         
-        for item_id, item in local_list[list_id].shopping_map.items():
+        for item_id, item in client_local_lists[list_id].shopping_map.items():
             items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
         
         # send user id and user list content to server
@@ -204,7 +249,7 @@ while True:
                 except:
                     continue
     
-            local_list[list_id] = updated_shopping_list
+            client_local_lists[list_id] = updated_shopping_list
         
         else: # client shopping list is already updated
             pass
