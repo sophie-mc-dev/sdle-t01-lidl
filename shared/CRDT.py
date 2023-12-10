@@ -111,13 +111,14 @@ class ShoppingList:
         self.quantity_counters[item_id] = PNCounter(item_id) 
         self.acquired_counters[item_id] = PNCounter(item_id)  
 
-    def remove_item(self, item_id):
+    def remove_item(self, item_name):
         """
         Removes an item of the shopping list.
 
         Parameters:
-        - item_id: Item ID
+        - item_name: Name of item to remove
         """
+        item_id = self.get_item_id_by_name(item_name)
         if item_id not in self.shopping_map:
             raise ValueError("Item ID does not exist in the shopping list.")
         
@@ -215,7 +216,7 @@ class ShoppingList:
                 if (item_name == item['name']):
                     replica_id = item_id
                     replica_item = item
-                    
+
             if is_self_defined:
                 # IF REPLICA'S MODIFICATION IS MORE RECENT
                 if int(replica_item["timestamp"]) > int(self_item["timestamp"]):

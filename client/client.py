@@ -34,7 +34,6 @@ def connect_to_server():
 
         # Try to connect to the server
         client_socket.connect((host, port))
-        #print("Connected to the server successfully!")
         return client_socket
     except Exception as e:
         # Handle connection errors
