@@ -51,10 +51,6 @@ def handle_client(client_socket):
     client_shoppint_list_items = encoded_client_items.split('\n')
     
     for line in client_shoppint_list_items:
-
-    
-    
-    for line in client_shopping_list_items:
         parts = line.split(':')
         print(len(parts))
         if len(parts) == 2:

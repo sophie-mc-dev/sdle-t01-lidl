@@ -51,14 +51,17 @@ def handle_client(client_sock, client_addr):
         encoded_client_items = client_sock.recv(1024).decode().strip()
         print("Client Shopping List initial content: " + encoded_client_items)
         client_shoppint_list_items = encoded_client_items.split('\n')
+
+        list_id = ""
     
         for line in client_shoppint_list_items:
 
-            
-            item_id, _, _, _, item_timestamp = line.split(':')
+            parts = line.split(':')
+            print(len(parts))
+            if len(parts) == 2:
+                list_id, user_id = parts
 
             
-            list_id = item_timestamp
             print("list_id: ", list_id)
 
 
