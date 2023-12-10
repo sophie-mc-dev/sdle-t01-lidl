@@ -15,7 +15,7 @@ server_startup_lock = threading.Lock()
 
 # Function to start a new server
 def start_server(port):
-    server_cmd = ["python3", "-m" "server.server.py", str(port)]  
+    server_cmd = ["python", "-m" "server.server.py", str(port)]  
     server_process = subprocess.Popen(server_cmd)
     return server_process
 
