@@ -1,2 +1,12 @@
 204
-402
+100
+palavra
+lista
+lista23
+12
+201
+ana
+a2
+a34
+list2
+list3

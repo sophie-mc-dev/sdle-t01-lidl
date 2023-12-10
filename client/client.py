@@ -14,8 +14,8 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Set the host and port
 host = "localhost"
-#port = 5555 #direct to server version
-port = 9090 #to load balancer version
+port = 5555 #direct to server version
+#port = 9090 #to load balancer version
 
 # choose a list ID to connect
 print("\nPlease enter your username. ")

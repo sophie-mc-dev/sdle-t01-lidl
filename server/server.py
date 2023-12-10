@@ -32,6 +32,7 @@ print("\nServer is listening...")
 # Function to handle a client
 def handle_client(client_socket):
     print(f"Connection from {client_socket.getpeername()}")
+    print("Test to see if utils is imported:", server_local_lists)
     
     # Create ShoppingList object
     shopping_list_from_client = ShoppingList()
@@ -40,6 +41,8 @@ def handle_client(client_socket):
     # Get data from client socket
 
     encoded_client_items = client_socket.recv(1024).decode().strip()
+
+
 
     print("Client Shopping List initial content on server: " + encoded_client_items)
     client_shoppint_list_items = encoded_client_items.split('\n')
@@ -73,12 +76,14 @@ def handle_client(client_socket):
     list_exists = False
     for id in active_lists:
         if id == list_id:
+            print("List exists with id ", id)
             list_exists = True
         
 
-    
+
 
     if not list_exists: # a lista ainda não existe - criá-la de raiz     
+        print("server local lists: ", server_local_lists)
 
         active_lists.append(list_id)
         server_local_lists[list_id] = shopping_list_from_client
@@ -93,6 +98,8 @@ def handle_client(client_socket):
 
 
     else: # a lista já existe, se tiver content tem de ser merged com o que vem do client
+
+        print("server local lists: ", server_local_lists)
 
         # MERGE SHOPPING LIST REPLICAS
         server_local_lists[list_id] = server_local_lists[list_id].merge(shopping_list_from_client)
