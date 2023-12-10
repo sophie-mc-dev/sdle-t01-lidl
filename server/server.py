@@ -12,9 +12,15 @@ sys.path.append(parent_dir)
 # Create a socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+if len(sys.argv) != 2:
+    print("Usage: python server.py <port>")
+    sys.exit(1)
+
+port = int(sys.argv[1])
+
 # Set the host and port
 host = "localhost"
-port = 5555
+#port = 5555
 
 # Bind the socket to the host and port
 server_socket.bind((host, port))
@@ -34,6 +40,8 @@ def handle_client(client_socket):
     # Get data from client socket
 
     encoded_client_items = client_socket.recv(1024).decode().strip()
+
+    print("Client Shopping List initial content on server: " + encoded_client_items)
     client_shoppint_list_items = encoded_client_items.split('\n')
     
     for line in client_shoppint_list_items:
@@ -43,6 +51,7 @@ def handle_client(client_socket):
 
         if item_id == "list_id":
             list_id = item_timestamp
+            print("list_id: ", list_id)
             shopping_list_from_client.set_id(list_id)
             continue
         
