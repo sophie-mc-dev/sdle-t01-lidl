@@ -1,3 +1,2 @@
 @echo off
-make clean
-python -m server.server
+python -m server.consistent_hashing

@@ -1,218 +1,283 @@
 import socket
 import sys
+import os
 from os.path import dirname, abspath
+import time
+from shared.utils import *
+from shared.CRDT import *
 
 parent_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(parent_dir)
-
-from shared.operations import *
-from shared.utils import *
-
 
 # Create a socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Set the host and port
 host = "localhost"
-port = 5555
+#port = 5555 #direct to server version
+port = 9090 #to load balancer version
 
-# Connect to the server
-client_socket.connect((host, port))
+# choose a list ID to connect
+print("\nPlease enter your username. ")
+user_id = input("> Username: ")
+# choose a list ID to connect
+print("\nPlease enter listID. ")
+list_id = input("> ListID: ")
 
 
-username = client_socket.recv(1024).decode()
+# Create ShoppingList object
+shopping_list = ShoppingList()
+shopping_list.set_replica_id(user_id)
+shopping_list.set_id(list_id)
 
-file_path = db_dir + "/client_data/clients_lists/" + username + ".txt"
-clients_lists_dir = db_dir + "/client_data/clients_lists/"
+# Create a folder for the user if it doesn't exist
+user_folder = os.path.join(db_dir, "client_data", user_id)
+os.makedirs(user_folder, exist_ok=True)
+
+# Path to the shopping list file inside the user's folder
+client_shopping_list_file_path = os.path.join(user_folder, list_id + ".txt")
+                
 
 
-listed = False
+# Get client local shopping list
+try: 
 
-while not listed:
-    message = client_socket.recv(1024).decode()
+    with open(client_shopping_list_file_path, 'r') as file:
+        for line in file:
+            line = line.strip()
+            item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
 
-    if "No active shooping lists." in message:
-        print("There are no active shooping lists. Let's create one for you.\n")
+            item = {
+                "name": item_name,
+                "quantity": item_quantity,
+                "acquired": item_acquired,
+                "timestamp": item_timestamp
+            }
 
-        list_id = extract_list_id(message)
-        client_list[username] = ShoppingList(list_id)
+            shopping_list.fill_with_item(item_id, item)
 
-        print(f"Your list id is '{list_id}'.")
+    print("heyyyyyyy")    
+    print(shopping_list.shopping_map.items())
 
-    elif "There already are active shooping lists" in message:
+    client_local_lists[list_id] = shopping_list
         
-        print("\n1 - Create a new shopping list \n2 - Connect to an existent shopping list")
-        option = input("Option: ")
-        client_socket.send(option.encode())
-
-        message = client_socket.recv(1024).decode()
-
-        if "Create new shopping list" in message: # option 1
-            print("Let's create a new shopping list.\n")
-            print(message)
-
-            list_id = extract_list_id(message)
-            client_list[username] = ShoppingList(list_id)
-
-            print(f"You are associated to list id '{list_id}'.")
-
-        elif "Choose one list ID" in message: # option 2
-            print(message)
-
-            chosen_list_id = input("List ID: ")
-            client_socket.send(chosen_list_id.encode())
-
-            message = client_socket.recv(1024).decode() # "Your list id is '" + list_id + "'."
-            list_id = extract_list_id(message)
-            client_list[username] = ShoppingList(list_id)
+except FileNotFoundError:
+    # first time this user is connecting
+    client_local_lists[list_id] = shopping_list
 
 
-            client_socket.send("Has content?".encode())
-            message = client_socket.recv(1024).decode()
 
-            # if that list already has some content..
-            if "empty_list" not in message:
-                # Split the received data using '\n' as the separator and store it in a list
-                list = message.split('\n')
+def connect_to_server():
+    try:
+        # Create a socket object
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-                # Add '\n' to the end of each element in the list
-                items = [item + '\n' for item in list]
-                # 'items' contains the items from local client union with server items
-
-                for item in items:
-                    item_name, quantity, acquired = item.strip().split(':')
-                    client_list[username].add_item(item_name, quantity, acquired)
-            
-            print(f"You are associated to list id '{list_id}'.")
-
-    listed = True
+        # Try to connect to the server
+        client_socket.connect((host, port))
+        # client_socket.send(user_id.encode())
+        return client_socket
+    except Exception as e:
+        # Handle connection errors
+        print(f"Error connecting to the server: {e}\n")
+        return None
     
 
-
-# Continue with list management or other operations
 while True:
-    
-    message = client_socket.recv(1024).decode()
 
-    if "Show menu" in message:
-
-        # ---------- server sync: -----------
+    # Show user list content
+    key = show_menu(list_id)
         
-        # read client's list
-        items_str = ""
-        for item in client_list[username].items:
-            items_str += item.name + ':' + str(item.quantity) + ':' + str(item.acquired) + '\n'
-
-        if items_str != "":
-
-            # Send client list items to server
-            client_socket.send(items_str.encode())
-
-            # Receive new items list and update client list
-            encoded_list_plus_message = client_socket.recv(1024).decode().strip()
-
-            # Split the received data using '\n' as the separator and store it in a list
-            list_plus_message = encoded_list_plus_message.split('\n')
-
-            # separate items from syncronization output
-            sync_output = list_plus_message.pop()
-
-            # Add '\n' to the end of each element in the list
-            items = [item + '\n' for item in list_plus_message]
-            # 'items' contains the items from local client union with server items
-            
-            print("items:")
-            print(items)
-
-            client_list[username] = ShoppingList(list_id) # clear client shopping list
-            for item in items:
-                item_name, quantity, acquired = item.strip().split(':')
-                client_list[username].add_item(item_name, quantity, acquired)
-
-            print(sync_output)
-
-        else:
-            client_socket.send("noContent".encode())
-            #print("There's no content to send.\n")
-
-        #----------------------------------
-
-
-        # Show user list content
-        print("\n------------ MENU ------------")
-        
-        if client_list[username].is_empty():
-            print("> Your list is empty.")
-        else: 
-            print("After server sync:")
-            print_user_list(username)
+    # Modify Shopping List
+    if key == "1":
 
         print("\nChoose one option:")
-        print(" 1 - Modify Shopping List")
-        print(" 0 - Exit")
+        print(" 1 - Add item")
+        print(" 2 - Delete item")
+        print(" 3 - Increment quantity")
+        print(" 4 - Decrement quantity")
+        print(" 5 - Item acquired")
+        print(" 6 - Item not acquired")
         key = input("Option: ")
+
+        # Add item
+        if key == "1": 
+            item={}
+            item_id = str(uuid.uuid4())  
+            item["name"] = input("\n> Enter item name: ")
+            item["quantity"] = input("> Enter item quantity: ")
+
+            try:
+                item["quantity"] = int(item["quantity"])
+                client_local_lists[list_id].add_item(item_id, item)
+                print("\nItem added successfully.")
+
+            except ValueError:
+                print("Quantity must be an integer.")
+        
+        # Delete item
+        elif key == "2": 
+
+            is_empty = client_local_lists[list_id].is_empty()
+
+            if is_empty:
+                print("\nYou have no items to delete.\n")
+            else:
+                aux_print_items(list_id)
+                item_to_remove = input("\n> Enter the name of the item to remove: ")
+                client_local_lists[list_id].remove_item(item_to_remove)
+                print("\nItem removed successfully.")
+
+        #Increment quantity
+        elif key == "3":
             
+            is_empty = client_local_lists[list_id].is_empty()
 
-        if key == "1":
-            print("\nChoose one option:")
-            print(" 1 - Add item")
-            print(" 2 - Delete item")
-            print(" 3 - Acquire item")
-            print(" 0 - Exit")
-            key = input("Option: ")
+            if is_empty:
+                print("\nYou have no items to increment.\n")
+            else:
+                aux_print_items(list_id)
+                item_to_increment = input("\n> Enter the name of the item to increment: ")
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_increment)
+                client_local_lists[list_id].increment_quantity(item_id)
+                print("\nItem quantity incremented successfully.")
 
-            if key == "1": 
-                item_name = input("> Name of the item: ")
-                item_quant = input("> Quantity: ")
+        # Decrement quantity
+        elif key == "4":
+            
+            is_empty = client_local_lists[list_id].is_empty()
 
-                try:
-                    item_quant = int(item_quant)
-                    # adicionar o novo elemento:
-                    client_list[username].add_item(item_name, item_quant, False)
-                    print("Item added with success.\n")
-                    print_user_list(username)
+            if is_empty:
+                print("\nYou have no items to decrement.\n")
+            else:
+                aux_print_items(list_id)
+                item_to_decrement = input("\n> Enter the name of the item to decrement: ")
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_decrement)
+                client_local_lists[list_id].decrement_quantity(item_id)
+                print("\nItem quantity decremented successfully.")
 
-                except ValueError:
-                    print("Quantity must be an integer.")
+        # Item acquired 
+        elif key == "5":
+            
+            is_empty = client_local_lists[list_id].is_empty()
+
+            if is_empty:
+                print("\nYou have no items to decrement.\n")
+            else:
+                aux_print_items(list_id)
+                item_to_update = input("\n> Enter the name of the item to update status: ")
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_update)
+                client_local_lists[list_id].update_acquired_status(item_id, True)
+                print("\nAcquired status updated successfully.")
+
+        # Item not acquired
+        elif key == "6":
+
+            is_empty = client_local_lists[list_id].is_empty()
+
+            if is_empty:
+                print("\nYou have no items to decrement.\n")
+            else:
+                aux_print_items(list_id)
+                item_to_update = input("\n> Enter the name of the item to update status: ")
+                item_id = client_local_lists[list_id].get_item_id_by_name(item_to_update)
+                client_local_lists[list_id].update_acquired_status(item_id, False)
+                print("\nAcquired status updated successfully.")
         
 
-            elif key == "2": 
+                is_empty = client_local_lists[list_id].is_empty()
 
-                if client_list[username].is_empty():
-                    print("\n> You have no items to delete.\n")
+                """ if is_empty:
+                    print("\nYou have no items to decrement.\n")
                 else:
-                    print("\nChoose an item to delete:\n")
-                    for item in client_list[username].items:
-                        print(item.__str__())
-                    item_ID = input("\n> Item ID: ")
-                    client_list[username].delete_item(item_ID)
-                    print("Item deleted with success.\n")
-                    print_user_list(username)
+                    aux_print_items(list_id)
+                    item_to_update = input("\n> Enter the name of the item to update status: ")
+                    client_local_lists[list_id].update_acquired_status(item_to_update, False)
+                    print("\nAcquired status updated successfully.") """
+      
+
+    # After all local changes were made, save locally and try to update list to server:
+
+    
+
+    # Syncronize Shopping List
+
+    print("\n\nTrying connect to server now...")
+    client_socket = connect_to_server()
+    print("Connected to the server.")
+    print(client_socket)
+
+    if client_socket is not None:
+
+        # marosca para mandar o userID e a listID
+        items_str = list_id + ":" + user_id + "\n"
+
+        print(client_local_lists[list_id].shopping_map.items())
+        
+        for item_id, item in client_local_lists[list_id].shopping_map.items():
+            items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
+        
+        print(items_str)
+        # send user id and user list content to server
+        client_socket.send(items_str.encode())
+        
+        # Receive new items list and update client list
+        encoded_list_plus_message = client_socket.recv(1024).decode().strip()
+        
+        # Split the received data using '\n' as the separator and store it in a list
+        list_plus_message = encoded_list_plus_message.split('\n')
+
+        # separate items from syncronization output
+        response = list_plus_message.pop()
+        print(response)
+
+        # merge happens, need to update client local shopping_list
+        if 'Your list have changed' in response:
+
+            # Add '\n' to the end of each element in the list
+            items = list_plus_message
+            # 'items' contains the items from local client union with server items
+
+            # update client local shopping_list
+            updated_shopping_list = ShoppingList()
+            shopping_list.set_id(list_id)
+
+            for line in items:
+                try:
+                    item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
+
+                    item = {
+                        "name": item_name,
+                        "quantity": item_quantity,
+                        "acquired": item_acquired,
+                        "timestamp": item_timestamp
+                    }
+
+                    updated_shopping_list.fill_with_item(item_id, item)
+
+                except:
+                    continue
+    
+            client_local_lists[list_id] = updated_shopping_list
+        
+        else: # client shopping list is already updated
+            pass
 
 
-            elif key == "3": 
-
-                if client_list[username].is_empty():
-                    print("\nYou have no items to mark.\n")
-                else:
-                    print("\nChoose an item to mark as acquired:\n")
-                    for item in client_list[username].items:
-                        print(item.__str__())
-                    item_ID = input("\n> Item ID: ")
-                    client_list[username].acquire_item(item_ID)
-                    print("Item acquired with success.\n")
-                    print_user_list(username)
+        # Close the connection to the server
+        client_socket.close()
+        print("Disconnected from the server.")
 
 
-            elif key == "0":
-                print("End of connection.\n")
-                break
+    # Save shopping list in the client pc
+    try:
+        print(client_local_lists[list_id].shopping_map.items())
+        with open(client_shopping_list_file_path, 'w') as file:
+            for item_id, item in client_local_lists[list_id].shopping_map.items():
+                print("saved")
+                file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
+                # file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
+    except FileNotFoundError:
+        pass
 
+    # Continue working locally
 
-        elif key == "0":
-            print("End of connection.\n")
-            break
-
-
-# Close the client socket
-client_socket.close()
