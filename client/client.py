@@ -56,7 +56,6 @@ try:
 
             shopping_list.fill_with_item(item_id, item)
 
-    print("heyyyyyyy")    
     print(shopping_list.shopping_map.items())
 
     client_local_lists[list_id] = shopping_list
@@ -203,20 +202,27 @@ while True:
 
     print("\n\nTrying connect to server now...")
     client_socket = connect_to_server()
-    print("Connected to the server.")
-    print(client_socket)
+    #print("Connected to the server.")
+    #print(client_socket)
 
     if client_socket is not None:
 
-        # marosca para mandar o userID e a listID
-        items_str = list_id + ":" + user_id + "\n"
+        vc_dict = client_local_lists[list_id].get_vector_clock()
+        print("dict..........")
+        v = 0
+        for value in vc_dict.values():
+            v = int(value)
+        print(v)
 
-        print(client_local_lists[list_id].shopping_map.items())
+        # marosca para mandar o userID e a listID
+        items_str = list_id + ":" + user_id + ":" + str(v) + "\n"
+
+        #print(client_local_lists[list_id].shopping_map.items())
         
         for item_id, item in client_local_lists[list_id].shopping_map.items():
             items_str += str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n'
         
-        print(items_str)
+        #print(items_str)
         # send user id and user list content to server
         client_socket.send(items_str.encode())
         
@@ -270,10 +276,10 @@ while True:
 
     # Save shopping list in the client pc
     try:
-        print(client_local_lists[list_id].shopping_map.items())
+        #print(client_local_lists[list_id].shopping_map.items())
         with open(client_shopping_list_file_path, 'w') as file:
             for item_id, item in client_local_lists[list_id].shopping_map.items():
-                print("saved")
+                #print("saved")
                 file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
                 # file.write(str(item_id) + ':' + str(item['name']) + ':' + str(item['quantity']) + ':' + str(item['acquired']) + ':' + str(item['timestamp']) + '\n')
     except FileNotFoundError:

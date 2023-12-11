@@ -15,6 +15,12 @@ class ShoppingList:
 
         self.quantity_counters = {}
         self.acquired_counters = {}
+    
+    def set_vector_clock(self, dict):
+        self.v = dict
+
+    def get_vector_clock(self):
+        return self.v
 
     def set_replica_id(self, replica_id):
         self.replica_id = replica_id
@@ -379,12 +385,12 @@ class ShoppingList:
                 self.shopping_map[replica_id] = replica.shopping_map[replica_id]
 
         # Merge items from replica in case of item deletion
-        '''
         for item_name in self_items_names:
             if item_name not in replica_items_names:
                 item_id = self.get_item_id_by_name(item_name)
                 if item_id is not None:
-                    del self.shopping_map[item_id] '''
+                    if replica_timestamp > local_timestamp:
+                        del self.shopping_map[item_id]
 
         # Merge quantity counters and acquired counters            
         for item_id in replica.quantity_counters:
