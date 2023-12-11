@@ -52,15 +52,20 @@ def handle_client(client_socket):
     
     for line in client_shoppint_list_items:
         parts = line.split(':')
-        print(len(parts))
-        if len(parts) == 2:
-            list_id, user_id = parts
+        if len(parts) == 3:
+            print(parts)
+            list_id, user_id, vector_clock = parts
+            print("-- user_id")
+            print(user_id)
             shopping_list_from_client.set_id(list_id)
             shopping_list_from_client.set_replica_id(user_id)
-            shopping_list_from_client.increment_counter()
+            aux_dict = {}
+            aux_dict[user_id] = int(vector_clock)
+            shopping_list_from_client.set_vector_clock(aux_dict)
+
             continue
         else:
-            print("hereeeeeee")
+            #print("hereeeeeee")
             item_id, item_name, item_quantity, item_acquired, item_timestamp = line.split(':')
             
             item = {
@@ -71,8 +76,12 @@ def handle_client(client_socket):
             }
 
             shopping_list_from_client.fill_with_item(item_id, item)
+        
+
+    print("Replica v: ", shopping_list_from_client.v)
 
 
+    
     print("\n\n> Client Shopping List '" + list_id + "' initial content:")
     for item_id, item in shopping_list_from_client.shopping_map.items():
         print(f" - Name: {item['name']}, Quantity: {item['quantity']}, Acquired: {item['acquired']}, Timestamp: {item['timestamp']}")
