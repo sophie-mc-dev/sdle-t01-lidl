@@ -385,20 +385,12 @@ class ShoppingList:
                 self.shopping_map[replica_id] = replica.shopping_map[replica_id]
 
         # Merge items from replica in case of item deletion
-<<<<<<< Updated upstream
-        '''
-=======
->>>>>>> Stashed changes
         for item_name in self_items_names:
             if item_name not in replica_items_names:
                 item_id = self.get_item_id_by_name(item_name)
                 if item_id is not None:
-<<<<<<< Updated upstream
-                    del self.shopping_map[item_id] '''
-=======
                     if replica_timestamp > local_timestamp:
                         del self.shopping_map[item_id]
->>>>>>> Stashed changes
 
         # Merge quantity counters and acquired counters            
         for item_id in replica.quantity_counters:
