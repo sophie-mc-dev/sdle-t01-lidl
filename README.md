@@ -61,3 +61,7 @@ Run client:
 ```
 ./run_client.sh
 ```
+
+## Link for the Demonstration Video
+
+https://drive.google.com/file/d/1pKXVPO2A9O6eCAnHGqNs66t024DRgAL1/view?usp=sharing
